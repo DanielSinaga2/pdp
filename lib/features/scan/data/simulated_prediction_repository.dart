@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../knowledge/domain/condition_label.dart';
 import '../domain/prediction_repository.dart';
 
 class SimulatedPredictionRepository implements PredictionRepository {
@@ -7,7 +8,7 @@ class SimulatedPredictionRepository implements PredictionRepository {
   Future<ScanPrediction> predict(Uint8List photo) async {
     await Future<void>.delayed(const Duration(milliseconds: 500));
     return const ScanPrediction(
-      condition: 'Bercak coklat',
+      label: ConditionLabel.brownSpot,
       confidence: 0.85,
       isSimulated: true,
     );

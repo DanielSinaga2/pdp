@@ -2,22 +2,32 @@ import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
 
+import '../../knowledge/domain/condition_label.dart';
+import '../../knowledge/domain/disease_detail_repository.dart';
 import '../domain/prediction_repository.dart';
+
+const _confidenceThreshold = 0.75;
 
 class ScanResultPage extends StatelessWidget {
   const ScanResultPage({
     super.key,
     required this.photo,
     required this.prediction,
+    required this.detail,
   });
 
   final Uint8List photo;
   final ScanPrediction prediction;
+  final DiseaseDetail detail;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final confidence = (prediction.confidence * 100).round();
+    final lowConfidence = prediction.confidence < _confidenceThreshold;
+    final roundedPercent = (prediction.confidence * 100).toStringAsFixed(1);
+    final confidence = lowConfidence && roundedPercent == '75.0'
+        ? '<75%'
+        : '${roundedPercent.replaceFirst(RegExp(r'\.0$'), '').replaceFirst('.', ',')}%';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Hasil analisis')),
@@ -41,14 +51,36 @@ class ScanResultPage extends StatelessWidget {
                           const SizedBox(height: 12),
                         ],
                         Text(
-                          prediction.condition,
+                          detail.name,
                           style: theme.textTheme.headlineSmall,
                         ),
                         const SizedBox(height: 8),
-                        Text('Tingkat keyakinan: $confidence%'),
+                        Text('Tingkat keyakinan: $confidence'),
+                        if (lowConfidence) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            'Hasil kurang meyakinkan. Coba ambil foto ulang '
+                            'dengan pencahayaan yang lebih baik.',
+                            style: TextStyle(color: theme.colorScheme.error),
+                          ),
+                        ],
                       ],
                     ),
                   ),
+                ),
+                const SizedBox(height: 16),
+                if (detail.needsReview)
+                  Text(
+                    'Materi masih perlu ditinjau oleh tim.',
+                    style: theme.textTheme.labelLarge,
+                  ),
+                _DetailSection(title: 'Gejala', content: detail.symptoms),
+                _DetailSection(title: 'Penyebab', content: detail.cause),
+                _DetailSection(
+                  title: prediction.label == ConditionLabel.healthy
+                      ? 'Perawatan'
+                      : 'Penanganan',
+                  content: detail.management,
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton(
@@ -59,6 +91,28 @@ class ScanResultPage extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DetailSection extends StatelessWidget {
+  const _DetailSection({required this.title, required this.content});
+
+  final String title;
+  final String? content;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(content ?? 'Materi belum tersedia.'),
+        ],
       ),
     );
   }

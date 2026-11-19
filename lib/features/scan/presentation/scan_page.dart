@@ -1,12 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../knowledge/domain/disease_detail_repository.dart';
 import '../domain/photo_repository.dart';
 import 'scan_bloc.dart';
 import 'scan_result_page.dart';
 
 class ScanPage extends StatelessWidget {
-  const ScanPage({super.key});
+  const ScanPage({super.key, required this.details});
+
+  final DiseaseDetailRepository details;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +24,11 @@ class ScanPage extends StatelessWidget {
 
         Navigator.of(context).push<void>(
           MaterialPageRoute<void>(
-            builder: (_) => ScanResultPage(photo: photo, prediction: prediction),
+            builder: (_) => ScanResultPage(
+              photo: photo,
+              prediction: prediction,
+              detail: details.getDetail(prediction.label),
+            ),
           ),
         );
       },
