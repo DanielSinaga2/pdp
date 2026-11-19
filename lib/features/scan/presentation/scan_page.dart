@@ -1,8 +1,7 @@
-import 'dart:typed_data';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../domain/photo_repository.dart';
 import 'scan_bloc.dart';
 import 'scan_result_page.dart';
 
@@ -44,7 +43,7 @@ class ScanPage extends StatelessWidget {
                     Text('Scan daun padi', style: theme.textTheme.headlineMedium),
                     const SizedBox(height: 8),
                     const Text(
-                      'Pilih foto daun padi dari galeri untuk melihat hasil simulasi.',
+                      'Ambil foto daun padi atau pilih foto dari galeri.',
                     ),
                     const SizedBox(height: 24),
                     if (photo == null)
@@ -75,23 +74,32 @@ class ScanPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                    if (state.status == ScanStatus.picking ||
-                        state.status == ScanStatus.analyzing) ...[
+                    if (state.isBusy) ...[
                       LinearProgressIndicator(
-                        semanticsLabel: state.status == ScanStatus.analyzing
-                            ? 'Analisis berlangsung'
-                            : 'Membuka galeri',
+                        semanticsLabel: switch (state.status) {
+                          ScanStatus.analyzing => 'Analisis berlangsung',
+                          ScanStatus.recovering => 'Memulihkan foto',
+                          _ => 'Menunggu pemilihan foto',
+                        },
                       ),
                       const SizedBox(height: 12),
                     ],
                     OutlinedButton.icon(
                       onPressed: state.isBusy
                           ? null
-                          : () => bloc.add(const PickGalleryPhoto()),
+                          : () => bloc.add(const PickPhoto(PhotoSource.gallery)),
                       icon: const Icon(Icons.photo_library_outlined),
                       label: Text(
                         photo == null ? 'Pilih Foto dari Galeri' : 'Ganti Foto',
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: state.isBusy
+                          ? null
+                          : () => bloc.add(const PickPhoto(PhotoSource.camera)),
+                      icon: const Icon(Icons.photo_camera_outlined),
+                      label: const Text('Ambil Foto'),
                     ),
                     const SizedBox(height: 8),
                     FilledButton(

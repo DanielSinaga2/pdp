@@ -36,8 +36,10 @@ class ScanResultPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Chip(label: Text('Hasil simulasi')),
-                        const SizedBox(height: 12),
+                        if (prediction.isSimulated) ...[
+                          const Chip(label: Text('Hasil simulasi')),
+                          const SizedBox(height: 12),
+                        ],
                         Text(
                           prediction.condition,
                           style: theme.textTheme.headlineSmall,

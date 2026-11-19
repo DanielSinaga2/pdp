@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pdp/features/scan/data/simulated_prediction_repository.dart';
-import 'package:pdp/features/scan/domain/gallery_repository.dart';
+import 'package:pdp/features/scan/domain/photo_repository.dart';
 import 'package:pdp/features/scan/domain/prediction_repository.dart';
 import 'package:pdp/features/scan/domain/scan_photo.dart';
 import 'package:pdp/features/scan/presentation/scan_bloc.dart';
@@ -23,7 +23,7 @@ void main() {
     );
     final selections = <Uint8List?>[_photo, null, replacement, null];
     final bloc = ScanBloc(
-      _Gallery(() async => selections.removeAt(0)),
+      _Photos((_) async => selections.removeAt(0)),
       ScanPhoto(SimulatedPredictionRepository()),
     );
     addTearDown(bloc.close);
@@ -68,7 +68,7 @@ void main() {
   ) async {
     var calls = 0;
     final bloc = ScanBloc(
-      _Gallery(() async {
+      _Photos((_) async {
         if (calls++ == 0) return _photo;
         throw const FormatException('Invalid image');
       }),
@@ -87,12 +87,72 @@ void main() {
     expect(_analyzeButton(tester).onPressed, isNotNull);
   });
 
+  testWidgets('kamera batal atau gagal, lalu bisa memilih foto', (tester) async {
+    var cameraCalls = 0;
+    final bloc = ScanBloc(
+      _Photos((source) async {
+        if (source == PhotoSource.gallery) return _photo;
+        switch (cameraCalls++) {
+          case 0:
+            return null;
+          case 1:
+            throw Exception('Camera unavailable');
+          default:
+            return Uint8List.fromList(_photo);
+        }
+      }),
+      ScanPhoto(SimulatedPredictionRepository()),
+    );
+    addTearDown(bloc.close);
+    await _openScan(tester, bloc);
+    await tester.tap(find.text('Pilih Foto dari Galeri'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Ambil Foto'));
+    await tester.pumpAndSettle();
+    expect(bloc.state.photo, same(_photo));
+
+    await tester.tap(find.text('Ambil Foto'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Kamera gagal mengambil foto. Silakan coba lagi.'),
+      findsOneWidget,
+    );
+    expect(bloc.state.photo, same(_photo));
+
+    await tester.tap(find.text('Ambil Foto'));
+    await tester.pumpAndSettle();
+    expect(bloc.state.status, ScanStatus.ready);
+    expect(bloc.state.photo, isNot(same(_photo)));
+    expect(_analyzeButton(tester).onPressed, isNotNull);
+  });
+
+  testWidgets('foto dari picker Android dipulihkan ke pratinjau', (tester) async {
+    final recovered = Completer<Uint8List?>();
+    final bloc = ScanBloc(
+      _Photos((_) async => null, recover: () => recovered.future),
+      ScanPhoto(SimulatedPredictionRepository()),
+    )..add(const RecoverPickerPhoto());
+    addTearDown(bloc.close);
+    await _openScan(tester, bloc);
+    await tester.pump();
+
+    expect(bloc.state.status, ScanStatus.recovering);
+    expect(_analyzeButton(tester).onPressed, isNull);
+
+    recovered.complete(_photo);
+    await tester.pumpAndSettle();
+    expect(bloc.state.photo, same(_photo));
+    expect(find.byType(Image), findsOneWidget);
+    expect(_analyzeButton(tester).onPressed, isNotNull);
+  });
+
   testWidgets('analisis ganda diabaikan dan kegagalan bisa dicoba lagi', (
     tester,
   ) async {
     final prediction = _PendingPrediction();
     final bloc = ScanBloc(
-      _Gallery(() async => _photo),
+      _Photos((_) async => _photo),
       ScanPhoto(prediction),
     );
     addTearDown(bloc.close);
@@ -121,13 +181,17 @@ Future<void> _openScan(WidgetTester tester, ScanBloc bloc) => tester.pumpWidget(
 FilledButton _analyzeButton(WidgetTester tester) =>
     tester.widget<FilledButton>(find.byType(FilledButton));
 
-class _Gallery implements GalleryRepository {
-  const _Gallery(this.pick);
+class _Photos implements PhotoRepository {
+  const _Photos(this.pick, {this.recover});
 
-  final Future<Uint8List?> Function() pick;
+  final Future<Uint8List?> Function(PhotoSource) pick;
+  final Future<Uint8List?> Function()? recover;
 
   @override
-  Future<Uint8List?> pickPhoto() => pick();
+  Future<Uint8List?> pickPhoto(PhotoSource source) => pick(source);
+
+  @override
+  Future<Uint8List?> recoverPhoto() async => await recover?.call();
 }
 
 class _PendingPrediction implements PredictionRepository {
