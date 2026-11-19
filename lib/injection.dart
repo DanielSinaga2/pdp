@@ -1,6 +1,15 @@
+import 'dart:io';
+
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
+import 'features/history/data/drift_history_repository.dart';
+import 'features/history/data/history_database.dart';
+import 'features/history/domain/history_repository.dart';
 import 'features/knowledge/data/local_disease_detail_repository.dart';
 import 'features/knowledge/domain/disease_detail_repository.dart';
 import 'features/scan/data/image_picker_photo_repository.dart';
@@ -13,6 +22,22 @@ import 'features/scan/presentation/scan_bloc.dart';
 final getIt = GetIt.instance;
 
 void configureDependencies() {
+  getIt.registerLazySingleton<HistoryDatabase>(
+    () => HistoryDatabase(LazyDatabase(() async {
+      final support = await getApplicationSupportDirectory();
+      await support.create(recursive: true);
+      return NativeDatabase.createInBackground(
+        File(p.join(support.path, 'scan_history.sqlite')),
+      );
+    })),
+    dispose: (database) => database.close(),
+  );
+  getIt.registerLazySingleton<HistoryRepository>(
+    () => DriftHistoryRepository(getIt<HistoryDatabase>(), () async {
+      final support = await getApplicationSupportDirectory();
+      return Directory(p.join(support.path, 'scan_history_photos'));
+    }),
+  );
   getIt.registerSingleton<DiseaseDetailRepository>(
     const LocalDiseaseDetailRepository(),
   );
@@ -24,7 +49,11 @@ void configureDependencies() {
   );
   getIt.registerLazySingleton(() => ScanPhoto(getIt<PredictionRepository>()));
   getIt.registerFactory(
-    () => ScanBloc(getIt<PhotoRepository>(), getIt<ScanPhoto>())
+    () => ScanBloc(
+      getIt<PhotoRepository>(),
+      getIt<ScanPhoto>(),
+      getIt<HistoryRepository>(),
+    )
       ..add(const RecoverPickerPhoto()),
   );
 }

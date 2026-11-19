@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:pdp/features/history/domain/history_repository.dart';
 import 'package:pdp/features/knowledge/data/local_disease_detail_repository.dart';
 import 'package:pdp/features/knowledge/domain/condition_label.dart';
 import 'package:pdp/features/scan/data/simulated_prediction_repository.dart';
@@ -69,12 +70,14 @@ void main() {
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNIaTIDAAJqAR0H9cpaAAAAAElFTkSuQmCC',
     );
     final selections = <Uint8List?>[_photo, null, replacement, null];
+    final history = _History();
     final bloc = ScanBloc(
       _Photos((_) async => selections.removeAt(0)),
       ScanPhoto(SimulatedPredictionRepository()),
+      history,
     );
     addTearDown(bloc.close);
-    await _openScan(tester, bloc);
+    await _openScan(tester, bloc, history: history);
 
     expect(_analyzeButton(tester).onPressed, isNull);
     await tester.tap(find.text('Pilih Foto dari Galeri'));
@@ -91,6 +94,7 @@ void main() {
     expect(bloc.state.photo, same(replacement));
 
     await tester.tap(find.text('Analisis'));
+    bloc.add(const AnalyzePhoto());
     await tester.pump();
     expect(find.text('Menganalisis…'), findsOneWidget);
     expect(_analyzeButton(tester).onPressed, isNull);
@@ -98,6 +102,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Hasil simulasi'), findsOneWidget);
+    expect(history.entries, hasLength(1));
     expect(find.text('Bercak coklat'), findsOneWidget);
     expect(find.text('Tingkat keyakinan: 85%'), findsOneWidget);
     expect(find.byType(Image), findsOneWidget);
@@ -112,6 +117,50 @@ void main() {
     await tester.pumpAndSettle();
     expect(bloc.state.photo, same(replacement));
     expect(find.text('Hasil simulasi'), findsNothing);
+
+    await tester.tap(find.byTooltip('Riwayat Scan'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bercak coklat'), findsOneWidget);
+    await tester.tap(find.text('Bercak coklat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Salinan foto tidak tersedia.'), findsOneWidget);
+    expect(find.text('Tingkat keyakinan: 85%'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Hapus catatan'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hapus catatan scan?'), findsOneWidget);
+    await tester.tap(find.text('Batal'));
+    await tester.pumpAndSettle();
+    expect(history.entries, hasLength(1));
+    await tester.tap(find.byTooltip('Hapus catatan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hapus'));
+    await tester.pumpAndSettle();
+    expect(find.text('Belum ada riwayat scan.'), findsOneWidget);
+  });
+
+  testWidgets('hasil tetap tampil jika riwayat gagal tersimpan', (tester) async {
+    final bloc = ScanBloc(
+      _Photos((_) async => _photo),
+      ScanPhoto(SimulatedPredictionRepository()),
+      _History(failSave: true),
+    );
+    addTearDown(bloc.close);
+    await _openScan(tester, bloc);
+    await tester.tap(find.text('Pilih Foto dari Galeri'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Analisis'));
+    await tester.tap(find.text('Analisis'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Hasil analisis tersedia, tetapi gagal disimpan ke riwayat.'),
+      findsOneWidget,
+    );
+    expect(find.text('Bercak coklat'), findsOneWidget);
   });
 
   testWidgets('pesan foto gagal dibaca dan foto sebelumnya dipertahankan', (
@@ -124,6 +173,7 @@ void main() {
         throw const FormatException('Invalid image');
       }),
       ScanPhoto(SimulatedPredictionRepository()),
+      _History(),
     );
     addTearDown(bloc.close);
     await _openScan(tester, bloc);
@@ -153,6 +203,7 @@ void main() {
         }
       }),
       ScanPhoto(SimulatedPredictionRepository()),
+      _History(),
     );
     addTearDown(bloc.close);
     await _openScan(tester, bloc);
@@ -183,6 +234,7 @@ void main() {
     final bloc = ScanBloc(
       _Photos((_) async => null, recover: () => recovered.future),
       ScanPhoto(SimulatedPredictionRepository()),
+      _History(),
     )..add(const RecoverPickerPhoto());
     addTearDown(bloc.close);
     await _openScan(tester, bloc);
@@ -205,6 +257,7 @@ void main() {
     final bloc = ScanBloc(
       _Photos((_) async => _photo),
       ScanPhoto(prediction),
+      _History(),
     );
     addTearDown(bloc.close);
     await _openScan(tester, bloc);
@@ -225,11 +278,18 @@ void main() {
   });
 }
 
-Future<void> _openScan(WidgetTester tester, ScanBloc bloc) => tester.pumpWidget(
+Future<void> _openScan(
+  WidgetTester tester,
+  ScanBloc bloc, {
+  HistoryRepository? history,
+}) => tester.pumpWidget(
   MaterialApp(
     home: BlocProvider.value(
       value: bloc,
-      child: const ScanPage(details: LocalDiseaseDetailRepository()),
+      child: ScanPage(
+        details: const LocalDiseaseDetailRepository(),
+        history: history ?? _History(),
+      ),
     ),
   ),
 );
@@ -259,4 +319,41 @@ class _PendingPrediction implements PredictionRepository {
     calls++;
     return result.future;
   }
+}
+
+class _History implements HistoryRepository {
+  _History({this.failSave = false});
+
+  final bool failSave;
+  final entries = <HistoryEntry>[];
+
+  @override
+  Future<void> save({
+    required ConditionLabel label,
+    required double confidence,
+    required DateTime scannedAt,
+    required bool isSimulated,
+    required Uint8List photo,
+  }) async {
+    if (failSave) throw Exception('Storage unavailable');
+    entries.add(HistoryEntry(
+      id: entries.length + 1,
+      label: label,
+      confidence: confidence,
+      scannedAt: scannedAt,
+      isSimulated: isSimulated,
+    ));
+  }
+
+  @override
+  Future<List<HistoryEntry>> list({ConditionLabel? label}) async =>
+      entries.where((entry) => label == null || label == entry.label).toList();
+
+  @override
+  Future<void> delete(int id) async {
+    entries.removeWhere((entry) => entry.id == id);
+  }
+
+  @override
+  Future<Uint8List?> readPhoto(int id) async => null;
 }

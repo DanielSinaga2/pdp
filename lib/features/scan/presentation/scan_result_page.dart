@@ -14,11 +14,15 @@ class ScanResultPage extends StatelessWidget {
     required this.photo,
     required this.prediction,
     required this.detail,
+    this.historySaveFailed = false,
+    this.scannedAtLabel,
   });
 
-  final Uint8List photo;
+  final Uint8List? photo;
   final ScanPrediction prediction;
   final DiseaseDetail detail;
+  final bool historySaveFailed;
+  final String? scannedAtLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +42,17 @@ class ScanResultPage extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               children: [
-                ScanPhotoPreview(photo: photo),
+                if (photo case final image?)
+                  ScanPhotoPreview(photo: image)
+                else
+                  const Text('Salinan foto tidak tersedia.'),
+                if (historySaveFailed)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 12),
+                    child: Text(
+                      'Hasil analisis tersedia, tetapi gagal disimpan ke riwayat.',
+                    ),
+                  ),
                 const SizedBox(height: 24),
                 Card(
                   child: Padding(
@@ -56,6 +70,7 @@ class ScanResultPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text('Tingkat keyakinan: $confidence'),
+                        if (scannedAtLabel case final timestamp?) Text(timestamp),
                         if (lowConfidence) ...[
                           const SizedBox(height: 12),
                           Text(
@@ -85,7 +100,9 @@ class ScanResultPage extends StatelessWidget {
                 const SizedBox(height: 16),
                 OutlinedButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Kembali ke Scan'),
+                  child: Text(
+                    scannedAtLabel == null ? 'Kembali ke Scan' : 'Kembali ke Riwayat',
+                  ),
                 ),
               ],
             ),

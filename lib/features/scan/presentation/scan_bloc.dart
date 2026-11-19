@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../history/domain/history_repository.dart';
 import '../domain/photo_repository.dart';
 import '../domain/prediction_repository.dart';
 import '../domain/scan_photo.dart';
@@ -32,12 +33,14 @@ class ScanState {
     this.photo,
     this.prediction,
     this.errorMessage,
+    this.historySaveFailed = false,
   });
 
   final ScanStatus status;
   final Uint8List? photo;
   final ScanPrediction? prediction;
   final String? errorMessage;
+  final bool historySaveFailed;
 
   bool get isBusy =>
       status == ScanStatus.picking ||
@@ -46,7 +49,7 @@ class ScanState {
 }
 
 class ScanBloc extends Bloc<ScanEvent, ScanState> {
-  ScanBloc(this._photos, this._scanPhoto)
+  ScanBloc(this._photos, this._scanPhoto, this._history)
     : super(const ScanState(ScanStatus.idle)) {
     on<PickPhoto>(_pickPhoto);
     on<RecoverPickerPhoto>(_recoverPhoto);
@@ -55,6 +58,7 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
 
   final PhotoRepository _photos;
   final ScanPhoto _scanPhoto;
+  final HistoryRepository _history;
 
   Future<void> _pickPhoto(PickPhoto event, Emitter<ScanState> emit) {
     return _loadPhoto(
@@ -113,7 +117,25 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
     emit(ScanState(ScanStatus.analyzing, photo: photo));
     try {
       final prediction = await _scanPhoto(photo);
-      emit(ScanState(ScanStatus.success, photo: photo, prediction: prediction));
+      var historySaveFailed = false;
+      try {
+        await _history.save(
+          label: prediction.label,
+          confidence: prediction.confidence,
+          scannedAt: DateTime.now(),
+          isSimulated: prediction.isSimulated,
+          photo: photo,
+        );
+      } catch (_) {
+        historySaveFailed = true;
+      }
+
+      emit(ScanState(
+        ScanStatus.success,
+        photo: photo,
+        prediction: prediction,
+        historySaveFailed: historySaveFailed,
+      ));
     } on Exception {
       emit(
         ScanState(
