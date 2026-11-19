@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'features/history/data/drift_history_repository.dart';
 import 'features/history/data/history_database.dart';
@@ -18,10 +19,19 @@ import 'features/scan/domain/photo_repository.dart';
 import 'features/scan/domain/prediction_repository.dart';
 import 'features/scan/domain/scan_photo.dart';
 import 'features/scan/presentation/scan_bloc.dart';
+import 'features/settings/data/local_settings_repository.dart';
+import 'features/settings/domain/settings_repository.dart';
+import 'features/settings/presentation/settings_cubit.dart';
 
 final getIt = GetIt.instance;
 
 void configureDependencies() {
+  getIt.registerLazySingleton<SettingsRepository>(
+    () => LocalSettingsRepository(SharedPreferencesAsync()),
+  );
+  getIt.registerFactory(
+    () => SettingsCubit(getIt<SettingsRepository>())..load(),
+  );
   getIt.registerLazySingleton<HistoryDatabase>(
     () => HistoryDatabase(LazyDatabase(() async {
       final support = await getApplicationSupportDirectory();

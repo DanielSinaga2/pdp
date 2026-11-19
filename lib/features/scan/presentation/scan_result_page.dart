@@ -4,9 +4,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../knowledge/domain/condition_label.dart';
 import '../../knowledge/domain/disease_detail_repository.dart';
+import '../../settings/domain/settings_repository.dart';
 import '../domain/prediction_repository.dart';
-
-const _confidenceThreshold = 0.75;
 
 class ScanResultPage extends StatelessWidget {
   const ScanResultPage({
@@ -15,6 +14,7 @@ class ScanResultPage extends StatelessWidget {
     required this.prediction,
     required this.detail,
     this.historySaveFailed = false,
+    this.confidencePercent = AppSettings.defaultConfidencePercent,
     this.scannedAtLabel,
   });
 
@@ -22,15 +22,16 @@ class ScanResultPage extends StatelessWidget {
   final ScanPrediction prediction;
   final DiseaseDetail detail;
   final bool historySaveFailed;
+  final int confidencePercent;
   final String? scannedAtLabel;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final lowConfidence = prediction.confidence < _confidenceThreshold;
+    final lowConfidence = prediction.confidence < confidencePercent / 100;
     final roundedPercent = (prediction.confidence * 100).toStringAsFixed(1);
-    final confidence = lowConfidence && roundedPercent == '75.0'
-        ? '<75%'
+    final confidence = lowConfidence && roundedPercent == '$confidencePercent.0'
+        ? '<$confidencePercent%'
         : '${roundedPercent.replaceFirst(RegExp(r'\.0$'), '').replaceFirst('.', ',')}%';
 
     return Scaffold(

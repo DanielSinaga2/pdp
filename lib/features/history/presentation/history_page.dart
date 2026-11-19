@@ -11,10 +11,16 @@ import '../domain/history_repository.dart';
 import 'history_cubit.dart';
 
 class HistoryPage extends StatelessWidget {
-  const HistoryPage({super.key, required this.details, required this.repository});
+  const HistoryPage({
+    super.key,
+    required this.details,
+    required this.repository,
+    required this.confidencePercent,
+  });
 
   final DiseaseDetailRepository details;
   final HistoryRepository repository;
+  final int confidencePercent;
 
   @override
   Widget build(BuildContext context) {
@@ -117,6 +123,7 @@ class HistoryPage extends StatelessWidget {
                                           ),
                                           detail: detail,
                                           scannedAtLabel: timestamp,
+                                          confidencePercent: confidencePercent,
                                         );
                                       },
                                     ),

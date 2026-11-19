@@ -15,6 +15,7 @@ import 'package:pdp/features/scan/domain/scan_photo.dart';
 import 'package:pdp/features/scan/presentation/scan_bloc.dart';
 import 'package:pdp/features/scan/presentation/scan_page.dart';
 import 'package:pdp/features/scan/presentation/scan_result_page.dart';
+import 'package:pdp/features/settings/domain/settings_repository.dart';
 
 final _photo = base64Decode(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwK3YGAAHPAO2uH13mAAAAAElFTkSuQmCC',
@@ -77,7 +78,7 @@ void main() {
       history,
     );
     addTearDown(bloc.close);
-    await _openScan(tester, bloc, history: history);
+    await _openScan(tester, bloc, history: history, confidencePercent: 90);
 
     expect(_analyzeButton(tester).onPressed, isNull);
     await tester.tap(find.text('Pilih Foto dari Galeri'));
@@ -93,6 +94,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(bloc.state.photo, same(replacement));
 
+    await tester.ensureVisible(find.text('Analisis'));
     await tester.tap(find.text('Analisis'));
     bloc.add(const AnalyzePhoto());
     await tester.pump();
@@ -105,6 +107,7 @@ void main() {
     expect(history.entries, hasLength(1));
     expect(find.text('Bercak coklat'), findsOneWidget);
     expect(find.text('Tingkat keyakinan: 85%'), findsOneWidget);
+    expect(find.text(warning), findsOneWidget);
     expect(find.byType(Image), findsOneWidget);
 
     await tester.scrollUntilVisible(find.text('Penanganan'), 100);
@@ -120,11 +123,22 @@ void main() {
 
     await tester.tap(find.byTooltip('Riwayat Scan'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Semua kondisi'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sehat').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Belum ada scan untuk kondisi ini.'), findsOneWidget);
+
+    await tester.tap(find.text('Sehat'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Semua kondisi').last);
+    await tester.pumpAndSettle();
     expect(find.text('Bercak coklat'), findsOneWidget);
     await tester.tap(find.text('Bercak coklat'));
     await tester.pumpAndSettle();
     expect(find.text('Salinan foto tidak tersedia.'), findsOneWidget);
     expect(find.text('Tingkat keyakinan: 85%'), findsOneWidget);
+    expect(find.text(warning), findsOneWidget);
 
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -282,6 +296,7 @@ Future<void> _openScan(
   WidgetTester tester,
   ScanBloc bloc, {
   HistoryRepository? history,
+  int confidencePercent = AppSettings.defaultConfidencePercent,
 }) => tester.pumpWidget(
   MaterialApp(
     home: BlocProvider.value(
@@ -289,6 +304,7 @@ Future<void> _openScan(
       child: ScanPage(
         details: const LocalDiseaseDetailRepository(),
         history: history ?? _History(),
+        confidencePercent: confidencePercent,
       ),
     ),
   ),
