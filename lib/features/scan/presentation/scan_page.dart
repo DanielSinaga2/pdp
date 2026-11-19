@@ -1,12 +1,27 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../history/domain/history_repository.dart';
+import '../../history/presentation/history_cubit.dart';
+import '../../history/presentation/history_page.dart';
+import '../../knowledge/domain/disease_detail_repository.dart';
+import '../../settings/domain/settings_repository.dart';
+import '../../settings/presentation/settings_page.dart';
 import '../domain/photo_repository.dart';
 import 'scan_bloc.dart';
 import 'scan_result_page.dart';
 
 class ScanPage extends StatelessWidget {
-  const ScanPage({super.key});
+  const ScanPage({
+    super.key,
+    required this.details,
+    required this.history,
+    this.confidencePercent = AppSettings.defaultConfidencePercent,
+  });
+
+  final DiseaseDetailRepository details;
+  final HistoryRepository history;
+  final int confidencePercent;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +36,13 @@ class ScanPage extends StatelessWidget {
 
         Navigator.of(context).push<void>(
           MaterialPageRoute<void>(
-            builder: (_) => ScanResultPage(photo: photo, prediction: prediction),
+            builder: (_) => ScanResultPage(
+              photo: photo,
+              prediction: prediction,
+              detail: details.getDetail(prediction.label),
+              historySaveFailed: state.historySaveFailed,
+              confidencePercent: confidencePercent,
+            ),
           ),
         );
       },
@@ -32,7 +53,38 @@ class ScanPage extends StatelessWidget {
         final photo = state.photo;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('PadiSehat')),
+          appBar: AppBar(
+            title: const Text('PadiSehat'),
+            actions: [
+              IconButton(
+                tooltip: 'Riwayat Scan',
+                icon: const Icon(Icons.history),
+                onPressed: state.isBusy ? null : () {
+                  Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(
+                      builder: (_) => BlocProvider(
+                        create: (_) => HistoryCubit(history)..load(),
+                        child: HistoryPage(
+                          details: details,
+                          repository: history,
+                          confidencePercent: confidencePercent,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              IconButton(
+                tooltip: 'Pengaturan',
+                icon: const Icon(Icons.settings_outlined),
+                onPressed: state.isBusy ? null : () {
+                  Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
+                  );
+                },
+              ),
+            ],
+          ),
           body: SafeArea(
             child: Center(
               child: ConstrainedBox(

@@ -2,6 +2,9 @@ import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
 
+import '../../knowledge/domain/condition_label.dart';
+import '../../knowledge/domain/disease_detail_repository.dart';
+import '../../settings/domain/settings_repository.dart';
 import '../domain/prediction_repository.dart';
 
 class ScanResultPage extends StatelessWidget {
@@ -9,15 +12,27 @@ class ScanResultPage extends StatelessWidget {
     super.key,
     required this.photo,
     required this.prediction,
+    required this.detail,
+    this.historySaveFailed = false,
+    this.confidencePercent = AppSettings.defaultConfidencePercent,
+    this.scannedAtLabel,
   });
 
-  final Uint8List photo;
+  final Uint8List? photo;
   final ScanPrediction prediction;
+  final DiseaseDetail detail;
+  final bool historySaveFailed;
+  final int confidencePercent;
+  final String? scannedAtLabel;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final confidence = (prediction.confidence * 100).round();
+    final lowConfidence = prediction.confidence < confidencePercent / 100;
+    final roundedPercent = (prediction.confidence * 100).toStringAsFixed(1);
+    final confidence = lowConfidence && roundedPercent == '$confidencePercent.0'
+        ? '<$confidencePercent%'
+        : '${roundedPercent.replaceFirst(RegExp(r'\.0$'), '').replaceFirst('.', ',')}%';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Hasil analisis')),
@@ -28,7 +43,17 @@ class ScanResultPage extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               children: [
-                ScanPhotoPreview(photo: photo),
+                if (photo case final image?)
+                  ScanPhotoPreview(photo: image)
+                else
+                  const Text('Salinan foto tidak tersedia.'),
+                if (historySaveFailed)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 12),
+                    child: Text(
+                      'Hasil analisis tersedia, tetapi gagal disimpan ke riwayat.',
+                    ),
+                  ),
                 const SizedBox(height: 24),
                 Card(
                   child: Padding(
@@ -41,24 +66,71 @@ class ScanResultPage extends StatelessWidget {
                           const SizedBox(height: 12),
                         ],
                         Text(
-                          prediction.condition,
+                          detail.name,
                           style: theme.textTheme.headlineSmall,
                         ),
                         const SizedBox(height: 8),
-                        Text('Tingkat keyakinan: $confidence%'),
+                        Text('Tingkat keyakinan: $confidence'),
+                        if (scannedAtLabel case final timestamp?) Text(timestamp),
+                        if (lowConfidence) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            'Hasil kurang meyakinkan. Coba ambil foto ulang '
+                            'dengan pencahayaan yang lebih baik.',
+                            style: TextStyle(color: theme.colorScheme.error),
+                          ),
+                        ],
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
+                if (detail.needsReview)
+                  Text(
+                    'Materi masih perlu ditinjau oleh tim.',
+                    style: theme.textTheme.labelLarge,
+                  ),
+                _DetailSection(title: 'Gejala', content: detail.symptoms),
+                _DetailSection(title: 'Penyebab', content: detail.cause),
+                _DetailSection(
+                  title: prediction.label == ConditionLabel.healthy
+                      ? 'Perawatan'
+                      : 'Penanganan',
+                  content: detail.management,
+                ),
+                const SizedBox(height: 16),
                 OutlinedButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Kembali ke Scan'),
+                  child: Text(
+                    scannedAtLabel == null ? 'Kembali ke Scan' : 'Kembali ke Riwayat',
+                  ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DetailSection extends StatelessWidget {
+  const _DetailSection({required this.title, required this.content});
+
+  final String title;
+  final String? content;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(content ?? 'Materi belum tersedia.'),
+        ],
       ),
     );
   }

@@ -1,8 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'features/history/domain/history_repository.dart';
+import 'features/knowledge/domain/disease_detail_repository.dart';
 import 'features/scan/presentation/scan_bloc.dart';
 import 'features/scan/presentation/scan_page.dart';
+import 'features/settings/domain/settings_repository.dart';
+import 'features/settings/presentation/settings_cubit.dart';
 import 'injection.dart';
 
 void main() {
@@ -15,14 +19,37 @@ class PadiSehatApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'PadiSehat',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF367343)),
-      ),
-      home: BlocProvider(
-        create: (_) => getIt<ScanBloc>(),
-        child: const ScanPage(),
+    const seed = Color(0xFF367343);
+
+    return BlocProvider(
+      create: (_) => getIt<SettingsCubit>(),
+      child: BlocBuilder<SettingsCubit, SettingsState>(
+        builder: (context, state) {
+          final settings = state.settings;
+          return MaterialApp(
+            title: 'PadiSehat',
+            theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: seed)),
+            darkTheme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: seed,
+                brightness: Brightness.dark,
+              ),
+            ),
+            themeMode: switch (settings.theme) {
+              AppThemePreference.system => ThemeMode.system,
+              AppThemePreference.light => ThemeMode.light,
+              AppThemePreference.dark => ThemeMode.dark,
+            },
+            home: BlocProvider(
+              create: (_) => getIt<ScanBloc>(),
+              child: ScanPage(
+                details: getIt<DiseaseDetailRepository>(),
+                history: getIt<HistoryRepository>(),
+                confidencePercent: settings.confidencePercent,
+              ),
+            ),
+          );
+        },
       ),
     );
   }

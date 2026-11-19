@@ -1,13 +1,15 @@
 import 'dart:typed_data';
 
+import '../../knowledge/domain/condition_label.dart';
+
 class ScanPrediction {
   const ScanPrediction({
-    required this.condition,
+    required this.label,
     required this.confidence,
     required this.isSimulated,
   });
 
-  final String condition;
+  final ConditionLabel label;
   final double confidence;
   final bool isSimulated;
 }
