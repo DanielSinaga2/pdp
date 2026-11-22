@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'features/history/domain/history_repository.dart';
 import 'features/knowledge/domain/disease_detail_repository.dart';
 import 'features/scan/presentation/scan_bloc.dart';
+import 'features/scan/presentation/landing_page.dart';
 import 'features/scan/presentation/scan_page.dart';
 import 'features/settings/domain/settings_repository.dart';
 import 'features/settings/presentation/settings_cubit.dart';
@@ -28,7 +29,9 @@ class PadiSehatApp extends StatelessWidget {
           final settings = state.settings;
           return MaterialApp(
             title: 'PadiSehat',
-            theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: seed)),
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: seed),
+            ),
             darkTheme: ThemeData(
               colorScheme: ColorScheme.fromSeed(
                 seedColor: seed,
@@ -42,10 +45,21 @@ class PadiSehatApp extends StatelessWidget {
             },
             home: BlocProvider(
               create: (_) => getIt<ScanBloc>(),
-              child: ScanPage(
-                details: getIt<DiseaseDetailRepository>(),
-                history: getIt<HistoryRepository>(),
-                confidencePercent: settings.confidencePercent,
+              child: Builder(
+                builder: (context) => LandingPage(
+                  onStart: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<ScanBloc>(),
+                        child: ScanPage(
+                          details: getIt<DiseaseDetailRepository>(),
+                          history: getIt<HistoryRepository>(),
+                          confidencePercent: settings.confidencePercent,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           );

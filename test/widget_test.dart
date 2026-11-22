@@ -26,7 +26,7 @@ void main() {
   const warning = 'Hasil kurang meyakinkan. Coba ambil foto ulang '
       'dengan pencahayaan yang lebih baik.';
 
-  test('lima kode unik memiliki entri lokal yang ditandai untuk ditinjau', () {
+  test('lima label memiliki materi lokal yang lengkap dan ditandai untuk ditinjau', () {
     expect(ConditionLabel.values.map((label) => label.code).toSet(), {
       'bacterial_leaf_blight', 'blast', 'brown_spot', 'tungro', 'healthy',
     });
@@ -37,7 +37,12 @@ void main() {
     for (final label in ConditionLabel.values) {
       final detail = details.getDetail(label);
       expect(detail.needsReview, isTrue);
-      expect([detail.symptoms, detail.cause, detail.management], everyElement(isNull));
+      expect(detail.symptoms, isNotNull);
+      expect(detail.symptoms, isNotEmpty);
+      expect(detail.cause, isNotNull);
+      expect(detail.cause, isNotEmpty);
+      expect(detail.management, isNotNull);
+      expect(detail.management, isNotEmpty);
     }
   });
 
@@ -281,6 +286,7 @@ void main() {
     bloc.add(const AnalyzePhoto());
     bloc.add(const AnalyzePhoto());
     await tester.pump();
+    await tester.pump();
 
     expect(prediction.calls, 1);
     expect(_analyzeButton(tester).onPressed, isNull);
@@ -311,7 +317,7 @@ Future<void> _openScan(
 );
 
 FilledButton _analyzeButton(WidgetTester tester) =>
-    tester.widget<FilledButton>(find.byType(FilledButton));
+    tester.allWidgets.whereType<FilledButton>().single;
 
 class _Photos implements PhotoRepository {
   const _Photos(this.pick, {this.recover});

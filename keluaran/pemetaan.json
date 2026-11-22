@@ -1,0 +1,47 @@
+{
+ "kelas": [
+  "bacterial_leaf_blight",
+  "bacterial_leaf_streak",
+  "bacterial_panicle_blight",
+  "blast",
+  "brown_spot",
+  "dead_heart",
+  "downy_mildew",
+  "hispa",
+  "normal",
+  "tungro"
+ ],
+ "varietas": [
+  "ADT45",
+  "AndraPonni",
+  "AtchayaPonni",
+  "IR20",
+  "KarnatakaPonni",
+  "Onthanel",
+  "Ponni",
+  "RR",
+  "Surya",
+  "Zonal"
+ ],
+ "umur_mean": 64.01990509033203,
+ "umur_std": 8.973665237426758,
+ "img": 224,
+ "cfg": {
+  "SUMBER": "hf",
+  "HF_REPO": "PawanKapakayala/paddy-disease-classification",
+  "KAGGLE_DIR": "/content/paddy-disease",
+  "IMG": "224",
+  "BATCH": "32",
+  "MAX_PER_CLASS": "None",
+  "BACKBONE": "efficientnetb0",
+  "PRETRAINED": "True",
+  "EPOCH_HEAD": "4",
+  "EPOCH_FT": "6",
+  "EPOCH_META": "40",
+  "LR_HEAD": "0.001",
+  "LR_FT": "1e-05",
+  "UNFREEZE_LAYERS": "40",
+  "SEED": "42",
+  "CACHE_DIR": "/content/paddy_cache"
+ }
+}
