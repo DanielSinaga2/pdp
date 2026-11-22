@@ -15,15 +15,15 @@ void main() {
 
     expect(find.byKey(const Key('padisehat-logo')), findsOneWidget);
     expect(find.text('Deteksi Penyakit Padi'), findsOneWidget);
-    expect(find.text('Scan daun padi'), findsOneWidget);
-    expect(find.text('Mulai Scan'), findsOneWidget);
+    expect(find.text('Scan'), findsOneWidget);
+    expect(find.text('Analisis daun padi dari kamera atau galeri'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('Mulai Scan'));
-    await tester.tap(find.text('Mulai Scan'));
+    await tester.ensureVisible(find.text('Scan'));
+    await tester.tap(find.text('Scan'));
     expect(started, isTrue);
   });
 
-  testWidgets('tombol scan dapat dicapai pada layar kecil bertema gelap', (
+  testWidgets('kartu Scan dapat dicapai pada layar kecil bertema gelap', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(320, 400));
@@ -36,8 +36,8 @@ void main() {
         home: LandingPage(onStart: () => started = true),
       ),
     );
-    await tester.scrollUntilVisible(find.text('Mulai Scan'), 100);
-    await tester.tap(find.text('Mulai Scan'));
+    await tester.scrollUntilVisible(find.text('Scan'), 100);
+    await tester.tap(find.text('Scan'));
     expect(started, isTrue);
     expect(tester.takeException(), isNull);
   });

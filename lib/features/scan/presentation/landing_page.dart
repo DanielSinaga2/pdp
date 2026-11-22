@@ -26,7 +26,7 @@ class LandingPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
                           child: Column(
                             children: [
                               DecoratedBox(
@@ -63,30 +63,34 @@ class LandingPage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const ExcludeSemantics(
-                          child: SizedBox(
-                            height: 186,
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                Positioned(
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  height: 65,
-                                  child: CustomPaint(painter: _FieldPainter()),
-                                ),
-                                CustomPaint(painter: _RiceLeafPainter()),
-                              ],
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 _ScanFeature(onStart: onStart),
+                const SizedBox(height: 16),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: const ExcludeSemantics(
+                    child: SizedBox(
+                      height: 186,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            height: 65,
+                            child: CustomPaint(painter: _FieldPainter()),
+                          ),
+                          CustomPaint(painter: _RiceLeafPainter()),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -108,56 +112,31 @@ class _ScanFeature extends StatelessWidget {
 
     return Card(
       margin: EdgeInsets.zero,
-      color: colors.surfaceContainerLow,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: colors.primaryContainer,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Icon(
-                      Icons.photo_camera_outlined,
-                      color: colors.onPrimaryContainer,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Scan daun padi', style: theme.textTheme.titleLarge),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Ambil foto atau pilih dari galeri untuk melihat hasil analisis.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onStart,
-              icon: const Icon(Icons.arrow_forward_rounded),
-              label: const Text('Mulai Scan'),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(0, 48),
-              ),
-            ),
-          ],
+      color: colors.primaryContainer,
+      clipBehavior: Clip.antiAlias,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        onTap: onStart,
+        leading: Icon(
+          Icons.photo_camera_outlined,
+          color: colors.onPrimaryContainer,
+        ),
+        title: Text(
+          'Scan',
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: colors.onPrimaryContainer,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        subtitle: Text(
+          'Analisis daun padi dari kamera atau galeri',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colors.onPrimaryContainer,
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: colors.onPrimaryContainer,
         ),
       ),
     );
