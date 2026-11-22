@@ -3,8 +3,8 @@ import 'package:material_ui/material_ui.dart';
 
 import 'features/history/domain/history_repository.dart';
 import 'features/knowledge/domain/disease_detail_repository.dart';
-import 'features/scan/presentation/scan_bloc.dart';
 import 'features/scan/presentation/landing_page.dart';
+import 'features/scan/presentation/scan_bloc.dart';
 import 'features/scan/presentation/scan_page.dart';
 import 'features/settings/domain/settings_repository.dart';
 import 'features/settings/presentation/settings_cubit.dart';
@@ -44,6 +44,7 @@ class PadiSehatApp extends StatelessWidget {
               AppThemePreference.dark => ThemeMode.dark,
             },
             home: BlocProvider(
+              lazy: false,
               create: (_) => getIt<ScanBloc>(),
               child: Builder(
                 builder: (context) => LandingPage(
@@ -51,10 +52,13 @@ class PadiSehatApp extends StatelessWidget {
                     MaterialPageRoute<void>(
                       builder: (_) => BlocProvider.value(
                         value: context.read<ScanBloc>(),
-                        child: ScanPage(
-                          details: getIt<DiseaseDetailRepository>(),
-                          history: getIt<HistoryRepository>(),
-                          confidencePercent: settings.confidencePercent,
+                        child: BlocSelector<SettingsCubit, SettingsState, int>(
+                          selector: (state) => state.settings.confidencePercent,
+                          builder: (context, confidencePercent) => ScanPage(
+                            details: getIt<DiseaseDetailRepository>(),
+                            history: getIt<HistoryRepository>(),
+                            confidencePercent: confidencePercent,
+                          ),
                         ),
                       ),
                     ),

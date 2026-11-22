@@ -11,96 +11,84 @@ class LandingPage extends StatelessWidget {
     final colors = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFCF4),
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) => Stack(
-            children: [
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: 118,
-                child: const CustomPaint(painter: _FieldPainter()),
-              ),
-              Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight - 132,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            const _BrandHeader(),
-                            SizedBox(
-                              height: (constraints.maxHeight * 0.31).clamp(
-                                210.0,
-                                270.0,
-                              ),
-                              width: double.infinity,
-                              child: const CustomPaint(
-                                painter: _RiceLeafPainter(),
-                              ),
-                            ),
-                            Text(
-                              'Aplikasi cerdas untuk mengenali penyakit '
-                              'pada daun padi.',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                color: const Color(0xFF58635E),
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 92),
-                    child: SizedBox(
-                      width: 300,
-                      height: 64,
-                      child: FilledButton(
-                        onPressed: onStart,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF19752F),
-                          foregroundColor: colors.onPrimary,
-                          shape: const StadiumBorder(),
-                          elevation: 3,
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: ColoredBox(
+                    color: colors.surfaceContainerLow,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                          child: Column(
                             children: [
-                              Text(
-                                'Mulai Scan',
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  color: colors.onPrimary,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w700,
+                              DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFAFCF4),
+                                  borderRadius: BorderRadius.circular(22),
+                                ),
+                                child: Image.asset(
+                                  'assets/branding/padisehat_logo.png',
+                                  key: const Key('padisehat-logo'),
+                                  semanticLabel: 'PadiSehat',
+                                  width: 108,
+                                  height: 96,
+                                  fit: BoxFit.contain,
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Icon(
-                                Icons.chevron_right,
-                                size: 30,
-                                color: colors.onPrimary,
+                              const SizedBox(height: 12),
+                              Text(
+                                'Deteksi Penyakit Padi',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: colors.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Kenali kondisi daun padi dari foto, langsung di perangkat.',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                      ),
+                        const ExcludeSemantics(
+                          child: SizedBox(
+                            height: 186,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Positioned(
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  height: 65,
+                                  child: CustomPaint(painter: _FieldPainter()),
+                                ),
+                                CustomPaint(painter: _RiceLeafPainter()),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 16),
+                _ScanFeature(onStart: onStart),
+              ],
+            ),
           ),
         ),
       ),
@@ -108,33 +96,70 @@ class LandingPage extends StatelessWidget {
   }
 }
 
-class _BrandHeader extends StatelessWidget {
-  const _BrandHeader();
+class _ScanFeature extends StatelessWidget {
+  const _ScanFeature({required this.onStart});
+
+  final VoidCallback onStart;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
-    return Column(
-      children: [
-        Image.asset(
-          'assets/branding/padisehat_logo.png',
-          key: const Key('padisehat-logo'),
-          width: 300,
-          height: 190,
-          fit: BoxFit.contain,
+    return Card(
+      margin: EdgeInsets.zero,
+      color: colors.surfaceContainerLow,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
+                      Icons.photo_camera_outlined,
+                      color: colors.onPrimaryContainer,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Scan daun padi', style: theme.textTheme.titleLarge),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Ambil foto atau pilih dari galeri untuk melihat hasil analisis.',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: onStart,
+              icon: const Icon(Icons.arrow_forward_rounded),
+              label: const Text('Mulai Scan'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(0, 48),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          'Deteksi Penyakit Padi\nLebih Cepat, Lebih Mudah',
-          textAlign: TextAlign.center,
-          style: theme.textTheme.titleLarge?.copyWith(
-            color: const Color(0xFF58635E),
-            height: 1.25,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -144,7 +169,9 @@ class _RiceLeafPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final scale = size.width / 400;
+    final widthScale = size.width / 400;
+    final heightScale = size.height / 280;
+    final scale = widthScale < heightScale ? widthScale : heightScale;
     canvas.save();
     canvas.translate(
       (size.width - 400 * scale) / 2,

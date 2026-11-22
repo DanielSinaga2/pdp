@@ -14,10 +14,31 @@ void main() {
     );
 
     expect(find.byKey(const Key('padisehat-logo')), findsOneWidget);
-    expect(find.textContaining('Deteksi Penyakit Padi'), findsOneWidget);
+    expect(find.text('Deteksi Penyakit Padi'), findsOneWidget);
+    expect(find.text('Scan daun padi'), findsOneWidget);
     expect(find.text('Mulai Scan'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('Mulai Scan'));
     await tester.tap(find.text('Mulai Scan'));
     expect(started, isTrue);
+  });
+
+  testWidgets('tombol scan dapat dicapai pada layar kecil bertema gelap', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    var started = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(),
+        home: LandingPage(onStart: () => started = true),
+      ),
+    );
+    await tester.scrollUntilVisible(find.text('Mulai Scan'), 100);
+    await tester.tap(find.text('Mulai Scan'));
+    expect(started, isTrue);
+    expect(tester.takeException(), isNull);
   });
 }
