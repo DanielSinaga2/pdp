@@ -15,6 +15,8 @@ import 'features/knowledge/data/local_disease_detail_repository.dart';
 import 'features/knowledge/domain/disease_detail_repository.dart';
 import 'features/scan/data/image_picker_photo_repository.dart';
 import 'features/scan/data/simulated_prediction_repository.dart';
+import 'features/scan/data/tflite_platform.dart';
+import 'features/scan/data/tflite_prediction_repository.dart';
 import 'features/scan/domain/photo_repository.dart';
 import 'features/scan/domain/prediction_repository.dart';
 import 'features/scan/domain/scan_photo.dart';
@@ -24,6 +26,10 @@ import 'features/settings/domain/settings_repository.dart';
 import 'features/settings/presentation/settings_cubit.dart';
 
 final getIt = GetIt.instance;
+
+/// Jalankan dengan `--dart-define=SIMULATED_MODEL=true` untuk memakai hasil
+/// simulasi (mis. saat berkas model belum ada di assets/model/).
+const _useSimulatedModel = bool.fromEnvironment('SIMULATED_MODEL');
 
 void configureDependencies() {
   getIt.registerLazySingleton<SettingsRepository>(
@@ -55,7 +61,12 @@ void configureDependencies() {
     () => ImagePickerPhotoRepository(ImagePicker()),
   );
   getIt.registerLazySingleton<PredictionRepository>(
-    SimulatedPredictionRepository.new,
+    () => _useSimulatedModel
+        ? SimulatedPredictionRepository()
+        : createTflitePredictionRepository(),
+    dispose: (repository) {
+      if (repository is TflitePredictionRepository) repository.dispose();
+    },
   );
   getIt.registerLazySingleton(() => ScanPhoto(getIt<PredictionRepository>()));
   getIt.registerFactory(
