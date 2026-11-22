@@ -2,12 +2,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'features/history/domain/history_repository.dart';
+import 'features/history/presentation/history_cubit.dart';
+import 'features/history/presentation/history_page.dart';
 import 'features/knowledge/domain/disease_detail_repository.dart';
 import 'features/scan/presentation/landing_page.dart';
 import 'features/scan/presentation/scan_bloc.dart';
 import 'features/scan/presentation/scan_page.dart';
 import 'features/settings/domain/settings_repository.dart';
 import 'features/settings/presentation/settings_cubit.dart';
+import 'features/settings/presentation/settings_page.dart';
 import 'injection.dart';
 
 void main() {
@@ -22,11 +25,14 @@ class PadiSehatApp extends StatelessWidget {
   Widget build(BuildContext context) {
     const seed = Color(0xFF367343);
 
-    return BlocProvider(
-      create: (_) => getIt<SettingsCubit>(),
-      child: BlocBuilder<SettingsCubit, SettingsState>(
-        builder: (context, state) {
-          final settings = state.settings;
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => getIt<SettingsCubit>()),
+        BlocProvider(lazy: false, create: (_) => getIt<ScanBloc>()),
+      ],
+      child: BlocSelector<SettingsCubit, SettingsState, AppThemePreference>(
+        selector: (state) => state.settings.theme,
+        builder: (context, theme) {
           return MaterialApp(
             title: 'PadiSehat',
             theme: ThemeData(
@@ -38,34 +44,35 @@ class PadiSehatApp extends StatelessWidget {
                 brightness: Brightness.dark,
               ),
             ),
-            themeMode: switch (settings.theme) {
+            themeMode: switch (theme) {
               AppThemePreference.system => ThemeMode.system,
               AppThemePreference.light => ThemeMode.light,
               AppThemePreference.dark => ThemeMode.dark,
             },
-            home: BlocProvider(
-              lazy: false,
-              create: (_) => getIt<ScanBloc>(),
-              child: Builder(
-                builder: (context) => LandingPage(
-                  onStart: () => Navigator.of(context).push<void>(
-                    MaterialPageRoute<void>(
-                      builder: (_) => BlocProvider.value(
-                        value: context.read<ScanBloc>(),
-                        child: BlocSelector<SettingsCubit, SettingsState, int>(
-                          selector: (state) => state.settings.confidencePercent,
-                          builder: (context, confidencePercent) => ScanPage(
-                            details: getIt<DiseaseDetailRepository>(),
-                            history: getIt<HistoryRepository>(),
-                            confidencePercent: confidencePercent,
-                          ),
-                        ),
-                      ),
+            home: const LandingPage(),
+            routes: {
+              LandingPage.scanRoute: (_) =>
+                  BlocSelector<SettingsCubit, SettingsState, int>(
+                    selector: (state) => state.settings.confidencePercent,
+                    builder: (_, confidencePercent) => ScanPage(
+                      details: getIt<DiseaseDetailRepository>(),
+                      history: getIt<HistoryRepository>(),
+                      confidencePercent: confidencePercent,
                     ),
+                  ),
+              LandingPage.historyRoute: (_) => BlocProvider(
+                create: (_) => HistoryCubit(getIt<HistoryRepository>())..load(),
+                child: BlocSelector<SettingsCubit, SettingsState, int>(
+                  selector: (state) => state.settings.confidencePercent,
+                  builder: (_, confidencePercent) => HistoryPage(
+                    details: getIt<DiseaseDetailRepository>(),
+                    repository: getIt<HistoryRepository>(),
+                    confidencePercent: confidencePercent,
                   ),
                 ),
               ),
-            ),
+              LandingPage.settingsRoute: (_) => const SettingsPage(),
+            },
           );
         },
       ),

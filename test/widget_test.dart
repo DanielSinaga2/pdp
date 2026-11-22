@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:pdp/features/history/domain/history_repository.dart';
 import 'package:pdp/features/knowledge/data/local_disease_detail_repository.dart';
 import 'package:pdp/features/knowledge/domain/condition_label.dart';
+import 'package:pdp/features/knowledge/domain/disease_detail_repository.dart';
 import 'package:pdp/features/scan/data/simulated_prediction_repository.dart';
 import 'package:pdp/features/scan/domain/photo_repository.dart';
 import 'package:pdp/features/scan/domain/prediction_repository.dart';
@@ -16,6 +17,9 @@ import 'package:pdp/features/scan/presentation/scan_bloc.dart';
 import 'package:pdp/features/scan/presentation/scan_page.dart';
 import 'package:pdp/features/scan/presentation/scan_result_page.dart';
 import 'package:pdp/features/settings/domain/settings_repository.dart';
+import 'package:pdp/features/settings/presentation/settings_cubit.dart';
+import 'package:pdp/injection.dart';
+import 'package:pdp/main.dart';
 
 final _photo = base64Decode(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwK3YGAAHPAO2uH13mAAAAAElFTkSuQmCC',
@@ -25,6 +29,56 @@ void main() {
   const details = LocalDiseaseDetailRepository();
   const warning = 'Hasil kurang meyakinkan. Coba ambil foto ulang '
       'dengan pencahayaan yang lebih baik.';
+
+  testWidgets('aplikasi dibuka di Beranda dan Scan membuka halaman kamera', (
+    tester,
+  ) async {
+    final history = _History();
+    getIt.registerSingleton<HistoryRepository>(history);
+    getIt.registerSingleton<DiseaseDetailRepository>(details);
+    getIt.registerFactory(() => SettingsCubit(_DefaultSettings())..load());
+    getIt.registerFactory(
+      () => ScanBloc(
+        _Photos((_) async => null),
+        ScanPhoto(SimulatedPredictionRepository()),
+        history,
+      ),
+    );
+    addTearDown(getIt.reset);
+
+    await tester.pumpWidget(const PadiSehatApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fitur'), findsOneWidget);
+    expect(find.text('Scan'), findsOneWidget);
+    expect(find.text('Riwayat'), findsOneWidget);
+    expect(find.text('Pengaturan'), findsOneWidget);
+    expect(find.byType(ScanPage), findsNothing);
+    expect(find.text('Ambil Foto'), findsNothing);
+
+    await tester.tap(find.text('Scan'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ScanPage), findsOneWidget);
+    expect(find.text('Scan daun padi'), findsOneWidget);
+    expect(find.text('Pilih Foto dari Galeri'), findsOneWidget);
+    expect(find.text('Ambil Foto'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text('Fitur'), findsOneWidget);
+    expect(find.byType(ScanPage), findsNothing);
+
+    await tester.tap(find.text('Riwayat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Belum ada riwayat scan.'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Pengaturan'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ambang tingkat keyakinan'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 
   test('lima label memiliki materi lokal yang lengkap dan ditandai untuk ditinjau', () {
     expect(ConditionLabel.values.map((label) => label.code).toSet(), {
@@ -378,4 +432,13 @@ class _History implements HistoryRepository {
 
   @override
   Future<Uint8List?> readPhoto(int id) async => null;
+}
+
+
+class _DefaultSettings implements SettingsRepository {
+  @override
+  Future<AppSettings> load() async => const AppSettings();
+
+  @override
+  Future<void> save(AppSettings settings) async {}
 }

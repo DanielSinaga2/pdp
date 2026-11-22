@@ -3,42 +3,30 @@ import 'package:material_ui/material_ui.dart';
 import 'package:pdp/features/scan/presentation/landing_page.dart';
 
 void main() {
-  testWidgets('landing page menampilkan pengenalan dan memulai scan', (
-    tester,
-  ) async {
-    var started = false;
-    await tester.pumpWidget(
-      MaterialApp(
-        home: LandingPage(onStart: () => started = true),
-      ),
-    );
-
-    expect(find.byKey(const Key('padisehat-logo')), findsOneWidget);
-    expect(find.text('Deteksi Penyakit Padi'), findsOneWidget);
-    expect(find.text('Scan'), findsOneWidget);
-    expect(find.text('Analisis daun padi dari kamera atau galeri'), findsOneWidget);
-
-    await tester.ensureVisible(find.text('Scan'));
-    await tester.tap(find.text('Scan'));
-    expect(started, isTrue);
-  });
-
-  testWidgets('kartu Scan dapat dicapai pada layar kecil bertema gelap', (
+  testWidgets('menu beranda dapat digunakan di layar kecil bertema gelap', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(320, 400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    var started = false;
 
     await tester.pumpWidget(
       MaterialApp(
         theme: ThemeData.dark(),
-        home: LandingPage(onStart: () => started = true),
+        home: const LandingPage(),
+        routes: {
+          LandingPage.scanRoute: (_) =>
+              const Scaffold(body: Text('Tujuan menu Scan')),
+        },
       ),
     );
+
+    expect(find.byKey(const Key('padisehat-logo')), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Scan'), 100);
+    expect(find.text('Riwayat'), findsOneWidget);
+    expect(find.text('Pengaturan'), findsOneWidget);
     await tester.tap(find.text('Scan'));
-    expect(started, isTrue);
+    await tester.pumpAndSettle();
+    expect(find.text('Tujuan menu Scan'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

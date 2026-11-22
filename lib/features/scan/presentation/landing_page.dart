@@ -1,9 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
 class LandingPage extends StatelessWidget {
-  const LandingPage({super.key, required this.onStart});
+  const LandingPage({super.key});
 
-  final VoidCallback onStart;
+  static const scanRoute = '/scan';
+  static const historyRoute = '/riwayat';
+  static const settingsRoute = '/pengaturan';
 
   @override
   Widget build(BuildContext context) {
@@ -11,85 +13,119 @@ class LandingPage extends StatelessWidget {
     final colors = theme.colorScheme;
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('PadiSehat'),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12, top: 6, bottom: 6),
+          child: Image.asset(
+            'assets/branding/padisehat_logo.png',
+            key: const Key('padisehat-logo'),
+            excludeFromSemantics: true,
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: BorderRadius.circular(24),
                   child: ColoredBox(
-                    color: colors.surfaceContainerLow,
+                    color: colors.primaryContainer,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFAFCF4),
-                                  borderRadius: BorderRadius.circular(22),
-                                ),
-                                child: Image.asset(
-                                  'assets/branding/padisehat_logo.png',
-                                  key: const Key('padisehat-logo'),
-                                  semanticLabel: 'PadiSehat',
-                                  width: 108,
-                                  height: 96,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
                               Text(
-                                'Deteksi Penyakit Padi',
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.headlineMedium?.copyWith(
+                                'Kenali kondisi daun padi',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  color: colors.onPrimaryContainer,
                                   fontWeight: FontWeight.w700,
-                                  color: colors.onSurface,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                               Text(
-                                'Kenali kondisi daun padi dari foto, langsung di perangkat.',
-                                textAlign: TextAlign.center,
+                                'Analisis foto langsung di perangkat.',
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: colors.onSurfaceVariant,
+                                  color: colors.onPrimaryContainer,
                                 ),
                               ),
                             ],
+                          ),
+                        ),
+                        const ExcludeSemantics(
+                          child: SizedBox(
+                            height: 116,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Positioned(
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  height: 44,
+                                  child: CustomPaint(painter: _FieldPainter()),
+                                ),
+                                CustomPaint(painter: _RiceLeafPainter()),
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                _ScanFeature(onStart: onStart),
-                const SizedBox(height: 16),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(28),
-                  child: const ExcludeSemantics(
-                    child: SizedBox(
-                      height: 186,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            height: 65,
-                            child: CustomPaint(painter: _FieldPainter()),
+                const SizedBox(height: 24),
+                Text('Fitur', style: theme.textTheme.titleLarge),
+                const SizedBox(height: 12),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    const gap = 8.0;
+                    final wideTiles =
+                        MediaQuery.textScalerOf(context).scale(14) > 19 ||
+                        constraints.maxWidth < 258;
+                    final width = wideTiles
+                        ? constraints.maxWidth
+                        : (constraints.maxWidth - 2 * gap) / 3;
+                    return Wrap(
+                      spacing: gap,
+                      runSpacing: gap,
+                      children: [
+                        SizedBox(
+                          width: width,
+                          child: const _FeatureTile(
+                            label: 'Scan',
+                            icon: Icons.camera_alt_outlined,
+                            route: scanRoute,
+                            primary: true,
                           ),
-                          CustomPaint(painter: _RiceLeafPainter()),
-                        ],
-                      ),
-                    ),
-                  ),
+                        ),
+                        SizedBox(
+                          width: width,
+                          child: const _FeatureTile(
+                            label: 'Riwayat',
+                            icon: Icons.history,
+                            route: historyRoute,
+                          ),
+                        ),
+                        SizedBox(
+                          width: width,
+                          child: const _FeatureTile(
+                            label: 'Pengaturan',
+                            icon: Icons.settings_outlined,
+                            route: settingsRoute,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
@@ -100,43 +136,44 @@ class LandingPage extends StatelessWidget {
   }
 }
 
-class _ScanFeature extends StatelessWidget {
-  const _ScanFeature({required this.onStart});
+class _FeatureTile extends StatelessWidget {
+  const _FeatureTile({
+    required this.label,
+    required this.icon,
+    required this.route,
+    this.primary = false,
+  });
 
-  final VoidCallback onStart;
+  final String label;
+  final IconData icon;
+  final String route;
+  final bool primary;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final foreground = primary ? colors.onPrimary : colors.onSurface;
 
     return Card(
       margin: EdgeInsets.zero,
-      color: colors.primaryContainer,
+      color: primary ? colors.primary : colors.surfaceContainerHigh,
       clipBehavior: Clip.antiAlias,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        onTap: onStart,
-        leading: Icon(
-          Icons.photo_camera_outlined,
-          color: colors.onPrimaryContainer,
-        ),
-        title: Text(
-          'Scan',
-          style: theme.textTheme.titleLarge?.copyWith(
-            color: colors.onPrimaryContainer,
-            fontWeight: FontWeight.w700,
+      child: InkWell(
+        onTap: () => Navigator.of(context).pushNamed<void>(route),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
+          child: Column(
+            children: [
+              Icon(icon, color: foreground),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.labelLarge?.copyWith(color: foreground),
+              ),
+            ],
           ),
-        ),
-        subtitle: Text(
-          'Analisis daun padi dari kamera atau galeri',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: colors.onPrimaryContainer,
-          ),
-        ),
-        trailing: Icon(
-          Icons.chevron_right,
-          color: colors.onPrimaryContainer,
         ),
       ),
     );
