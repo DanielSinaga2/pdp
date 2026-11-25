@@ -42,6 +42,7 @@ class ScanPage extends StatelessWidget {
               detail: details.getDetail(prediction.label),
               historySaveFailed: state.historySaveFailed,
               confidencePercent: confidencePercent,
+              diseaseDetails: details,
             ),
           ),
         );

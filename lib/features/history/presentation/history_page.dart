@@ -36,7 +36,9 @@ class HistoryPage extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: InputDecorator(
-                    decoration: const InputDecoration(labelText: 'Filter kondisi'),
+                    decoration: const InputDecoration(
+                      labelText: 'Filter kondisi',
+                    ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         isExpanded: true,
@@ -52,14 +54,16 @@ class HistoryPage extends StatelessWidget {
                               child: Text(details.getDetail(label).name),
                             ),
                         ],
-                        onChanged: state.busy ? null : (code) {
-                          final label = code == null || code.isEmpty
-                              ? null
-                              : ConditionLabel.values.firstWhere(
-                                  (label) => label.code == code,
-                                );
-                          cubit.load(filter: label);
-                        },
+                        onChanged: state.busy
+                            ? null
+                            : (code) {
+                                final label = code == null || code.isEmpty
+                                    ? null
+                                    : ConditionLabel.values.firstWhere(
+                                        (label) => label.code == code,
+                                      );
+                                cubit.load(filter: label);
+                              },
                       ),
                     ),
                   ),
@@ -70,9 +74,12 @@ class HistoryPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       children: [
-                        Text(error, style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        )),
+                        Text(
+                          error,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
                         TextButton(
                           onPressed: () => cubit.load(filter: state.filter),
                           child: const Text('Coba lagi'),
@@ -85,16 +92,21 @@ class HistoryPage extends StatelessWidget {
                       ? Center(
                           child: state.busy || state.error != null
                               ? null
-                              : Text(state.filter == null
-                                  ? 'Belum ada riwayat scan.'
-                                  : 'Belum ada scan untuk kondisi ini.'),
+                              : Text(
+                                  state.filter == null
+                                      ? 'Belum ada riwayat scan.'
+                                      : 'Belum ada scan untuk kondisi ini.',
+                                ),
                         )
                       : ListView.builder(
                           itemCount: state.entries.length,
                           itemBuilder: (context, index) {
                             final entry = state.entries[index];
                             final detail = details.getDetail(entry.label);
-                            final timestamp = _formatDate(context, entry.scannedAt);
+                            final timestamp = _formatDate(
+                              context,
+                              entry.scannedAt,
+                            );
                             return ListTile(
                               title: Text(detail.name),
                               subtitle: Text(
@@ -102,39 +114,54 @@ class HistoryPage extends StatelessWidget {
                                     ? '$timestamp · Hasil simulasi'
                                     : timestamp,
                               ),
-                              onTap: state.busy ? null : () {
-                                final photo = repository.readPhoto(entry.id);
-                                Navigator.of(context).push<void>(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => FutureBuilder<Uint8List?>(
-                                      future: photo,
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState != ConnectionState.done) {
-                                          return const Scaffold(
-                                            body: Center(child: CircularProgressIndicator()),
-                                          );
-                                        }
-                                        return ScanResultPage(
-                                          photo: snapshot.data,
-                                          prediction: ScanPrediction(
-                                            label: entry.label,
-                                            confidence: entry.confidence,
-                                            isSimulated: entry.isSimulated,
+                              onTap: state.busy
+                                  ? null
+                                  : () {
+                                      final photo = repository.readPhoto(
+                                        entry.id,
+                                      );
+                                      Navigator.of(context).push<void>(
+                                        MaterialPageRoute<void>(
+                                          builder: (_) => FutureBuilder<Uint8List?>(
+                                            future: photo,
+                                            builder: (context, snapshot) {
+                                              if (snapshot.connectionState !=
+                                                  ConnectionState.done) {
+                                                return const Scaffold(
+                                                  body: Center(
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  ),
+                                                );
+                                              }
+                                              return ScanResultPage(
+                                                photo: snapshot.data,
+                                                prediction: ScanPrediction(
+                                                  label: entry.label,
+                                                  confidence: entry.confidence,
+                                                  isSimulated:
+                                                      entry.isSimulated,
+                                                ),
+                                                detail: detail,
+                                                scannedAtLabel: timestamp,
+                                                confidencePercent:
+                                                    confidencePercent,
+                                                diseaseDetails: details,
+                                              );
+                                            },
                                           ),
-                                          detail: detail,
-                                          scannedAtLabel: timestamp,
-                                          confidencePercent: confidencePercent,
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                );
-                              },
+                                        ),
+                                      );
+                                    },
                               trailing: IconButton(
                                 tooltip: 'Hapus catatan',
                                 onPressed: state.busy
                                     ? null
-                                    : () => _confirmDelete(context, cubit, entry.id),
+                                    : () => _confirmDelete(
+                                        context,
+                                        cubit,
+                                        entry.id,
+                                      ),
                                 icon: const Icon(Icons.delete_outline),
                               ),
                             );
@@ -166,7 +193,9 @@ class HistoryPage extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hapus catatan scan?'),
-        content: const Text('Catatan dan salinan fotonya akan dihapus dari riwayat.'),
+        content: const Text(
+          'Catatan dan salinan fotonya akan dihapus dari riwayat.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
