@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../history/domain/history_repository.dart';
 import '../domain/photo_repository.dart';
 import '../domain/prediction_repository.dart';
+import '../domain/rice_photo_screening.dart';
 import '../domain/scan_photo.dart';
 
 sealed class ScanEvent {
@@ -136,12 +137,14 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
         prediction: prediction,
         historySaveFailed: historySaveFailed,
       ));
-    } on Exception {
+    } on Exception catch (error) {
       emit(
         ScanState(
           ScanStatus.failure,
           photo: photo,
-          errorMessage: 'Analisis gagal. Silakan coba lagi.',
+          errorMessage: error is UnsuitableRicePhoto
+              ? 'Foto belum bisa dianalisis. Pilih foto daun padi yang terlihat jelas.'
+              : 'Analisis gagal. Silakan coba lagi.',
         ),
       );
     }

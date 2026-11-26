@@ -12,6 +12,7 @@ import 'package:pdp/features/knowledge/domain/disease_detail_repository.dart';
 import 'package:pdp/features/scan/data/simulated_prediction_repository.dart';
 import 'package:pdp/features/scan/domain/photo_repository.dart';
 import 'package:pdp/features/scan/domain/prediction_repository.dart';
+import 'package:pdp/features/scan/domain/rice_photo_screening.dart';
 import 'package:pdp/features/scan/domain/scan_photo.dart';
 import 'package:pdp/features/scan/presentation/scan_bloc.dart';
 import 'package:pdp/features/scan/presentation/scan_page.dart';
@@ -40,7 +41,7 @@ void main() {
     getIt.registerFactory(
       () => ScanBloc(
         _Photos((_) async => null),
-        ScanPhoto(SimulatedPredictionRepository()),
+        ScanPhoto(SimulatedPredictionRepository(), const _AllowPhoto()),
         history,
       ),
     );
@@ -135,7 +136,7 @@ void main() {
     final history = _History();
     final bloc = ScanBloc(
       _Photos((_) async => selections.removeAt(0)),
-      ScanPhoto(SimulatedPredictionRepository()),
+      ScanPhoto(SimulatedPredictionRepository(), const _AllowPhoto()),
       history,
     );
     addTearDown(bloc.close);
@@ -216,10 +217,35 @@ void main() {
     expect(find.text('Belum ada riwayat scan.'), findsOneWidget);
   });
 
+  testWidgets('foto yang ditolak tidak diprediksi atau disimpan', (tester) async {
+    final history = _History();
+    final prediction = _PendingPrediction();
+    final bloc = ScanBloc(
+      _Photos((_) async => _photo),
+      ScanPhoto(prediction, const _AllowPhoto(allowed: false)),
+      history,
+    );
+    addTearDown(bloc.close);
+    await _openScan(tester, bloc, history: history);
+    await tester.tap(find.text('Pilih Foto dari Galeri'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Analisis'));
+    await tester.tap(find.text('Analisis'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Foto belum bisa dianalisis. Pilih foto daun padi yang terlihat jelas.'),
+      findsOneWidget,
+    );
+    expect(find.text('Ganti Foto'), findsOneWidget);
+    expect(prediction.calls, 0);
+    expect(history.entries, isEmpty);
+  });
+
   testWidgets('hasil tetap tampil jika riwayat gagal tersimpan', (tester) async {
     final bloc = ScanBloc(
       _Photos((_) async => _photo),
-      ScanPhoto(SimulatedPredictionRepository()),
+      ScanPhoto(SimulatedPredictionRepository(), const _AllowPhoto()),
       _History(failSave: true),
     );
     addTearDown(bloc.close);
@@ -247,7 +273,7 @@ void main() {
         if (calls++ == 0) return _photo;
         throw const FormatException('Invalid image');
       }),
-      ScanPhoto(SimulatedPredictionRepository()),
+      ScanPhoto(SimulatedPredictionRepository(), const _AllowPhoto()),
       _History(),
     );
     addTearDown(bloc.close);
@@ -277,7 +303,7 @@ void main() {
             return Uint8List.fromList(_photo);
         }
       }),
-      ScanPhoto(SimulatedPredictionRepository()),
+      ScanPhoto(SimulatedPredictionRepository(), const _AllowPhoto()),
       _History(),
     );
     addTearDown(bloc.close);
@@ -308,7 +334,7 @@ void main() {
     final recovered = Completer<Uint8List?>();
     final bloc = ScanBloc(
       _Photos((_) async => null, recover: () => recovered.future),
-      ScanPhoto(SimulatedPredictionRepository()),
+      ScanPhoto(SimulatedPredictionRepository(), const _AllowPhoto()),
       _History(),
     )..add(const RecoverPickerPhoto());
     addTearDown(bloc.close);
@@ -331,7 +357,7 @@ void main() {
     final prediction = _PendingPrediction();
     final bloc = ScanBloc(
       _Photos((_) async => _photo),
-      ScanPhoto(prediction),
+      ScanPhoto(prediction, const _AllowPhoto()),
       _History(),
     );
     addTearDown(bloc.close);
@@ -443,4 +469,13 @@ class _DefaultSettings implements SettingsRepository {
 
   @override
   Future<void> save(AppSettings settings) async {}
+}
+
+class _AllowPhoto implements RicePhotoScreening {
+  const _AllowPhoto({this.allowed = true});
+
+  final bool allowed;
+
+  @override
+  Future<bool> accepts(Uint8List photo) async => allowed;
 }

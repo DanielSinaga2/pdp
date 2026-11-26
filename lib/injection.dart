@@ -17,8 +17,10 @@ import 'features/scan/data/image_picker_photo_repository.dart';
 import 'features/scan/data/simulated_prediction_repository.dart';
 import 'features/scan/data/tflite_platform.dart';
 import 'features/scan/data/tflite_prediction_repository.dart';
+import 'features/scan/data/vegetation_color_screening.dart';
 import 'features/scan/domain/photo_repository.dart';
 import 'features/scan/domain/prediction_repository.dart';
+import 'features/scan/domain/rice_photo_screening.dart';
 import 'features/scan/domain/scan_photo.dart';
 import 'features/scan/presentation/scan_bloc.dart';
 import 'features/settings/data/local_settings_repository.dart';
@@ -68,7 +70,12 @@ void configureDependencies() {
       if (repository is TflitePredictionRepository) repository.dispose();
     },
   );
-  getIt.registerLazySingleton(() => ScanPhoto(getIt<PredictionRepository>()));
+  getIt.registerSingleton<RicePhotoScreening>(
+    const VegetationColorScreening(UiPhotoPreprocessor()),
+  );
+  getIt.registerLazySingleton(
+    () => ScanPhoto(getIt<PredictionRepository>(), getIt<RicePhotoScreening>()),
+  );
   getIt.registerFactory(
     () => ScanBloc(
       getIt<PhotoRepository>(),
