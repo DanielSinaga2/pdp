@@ -45,6 +45,33 @@ void main() {
     expect(result.score, closeTo(0.48, 1e-10));
   });
 
+  test('tingkat jawaban pengguna dipetakan ke CF User notebook', () {
+    expect(
+      SymptomAnswer.values.map((answer) => answer.cfUser).toList(),
+      NotebookExpertRules.userConfidenceLevels,
+    );
+    expect(SymptomAnswer.values.map((answer) => answer.label).toList(), [
+      'Tidak',
+      'Ragu',
+      'Cukup yakin',
+      'Yakin',
+      'Sangat yakin',
+    ]);
+  });
+
+  test('CF negatif saja tetap menghasilkan skor negatif', () {
+    final result = const CertaintyFactorCalculator().calculate(
+      condition: ConditionLabel.blast,
+      observations: [observation(id: 'negative', confidence: 0.8)],
+      rules: [rule(id: 'negative', weight: -0.5)],
+    );
+
+    expect(result.isCalculated, isTrue);
+    expect(result.steps.single.positiveEvidence, 0);
+    expect(result.steps.single.negativeEvidence, closeTo(0.4, 1e-10));
+    expect(result.score, closeTo(-0.4, 1e-10));
+  });
+
   test('CF menggunakan agregasi positif-negatif persis seperti notebook', () {
     final result = const CertaintyFactorCalculator().calculate(
       condition: ConditionLabel.blast,
@@ -127,6 +154,47 @@ void main() {
     expect(notObserved.score, isNull);
   });
 
+  test('jawaban kosong tidak menjadi evidence atau nilai Tidak', () {
+    final result = const CertaintyFactorCalculator().calculate(
+      condition: ConditionLabel.blast,
+      observations: const [],
+      rules: NotebookExpertRules.rules,
+    );
+
+    expect(result.status, CertaintyStatus.notCalculated);
+    expect(result.evidence, isEmpty);
+    expect(result.score, isNull);
+  });
+
+  test('satu gejala yang diisi cukup untuk menghitung CF tanpa 16 jawaban', () {
+    final result = const CertaintyFactorCalculator().calculate(
+      condition: ConditionLabel.blast,
+      observations: [observation(confidence: 0.8)],
+      rules: NotebookExpertRules.rules,
+    );
+
+    expect(result.isCalculated, isTrue);
+    expect(result.evidence, hasLength(1));
+    expect(result.score, closeTo(0.64, 1e-10));
+  });
+
+  test('pertanyaan adaptif menampilkan gejala utama dan beberapa pembeda', () {
+    final adaptive = NotebookExpertRules.adaptiveSymptomQuestions(
+      ConditionLabel.bacterialLeafBlight,
+    );
+    final primaryIds = adaptive.primary.map((question) => question.symptomId);
+    final differentialIds = adaptive.differential.map(
+      (question) => question.symptomId,
+    );
+
+    expect(primaryIds, containsAll(['G01', 'G02', 'G03', 'G04', 'G16']));
+    expect(differentialIds, containsAll(['G05', 'G08', 'G12']));
+    expect(
+      adaptive.primary.length + adaptive.differential.length,
+      lessThan(NotebookExpertRules.symptomQuestions.length),
+    );
+  });
+
   test('CF melaporkan evidence tanpa aturan yang dikenal', () {
     final result = const CertaintyFactorCalculator().calculate(
       condition: ConditionLabel.blast,
@@ -167,6 +235,21 @@ void main() {
     expect(result.singleWhere((item) => item.id == 'E02').degree, 1);
     expect(result.singleWhere((item) => item.id == 'E03').degree, 1);
     expect(result.singleWhere((item) => item.id == 'E05').degree, 1);
+  });
+
+  test('membership lingkungan menghasilkan E04 dan E06 dari input numerik', () {
+    final result = engine.environmentalEvidence(
+      const FuzzyInputs(
+        daysAfterTransplant: 100,
+        relativeHumidityPercent: 50,
+        temperatureCelsius: 30,
+        rainfallLast7DaysMm: 0,
+      ),
+    );
+
+    expect(result.singleWhere((item) => item.id == 'E04').degree, 1);
+    expect(result.singleWhere((item) => item.id == 'E06').degree, 1);
+    expect(FuzzyLogicEngine.sharpenPower, 3);
   });
 
   test('Sugeno memerlukan keparahan, HST, RH dan CF positif', () {
@@ -225,6 +308,79 @@ void main() {
     expect(result.ureaFactorAfterGrowthStage, 0);
   });
 
+  test(
+    'pagar Urea tidak menyarankan pemupukan saat HST tidak diketahui/akhir',
+    () {
+      final service = DiseaseAnalysisService.fromNotebookDraft();
+      final prediction = const ScanPrediction(
+        label: ConditionLabel.bacterialLeafBlight,
+        confidence: 0.9,
+        isSimulated: false,
+      );
+
+      for (final hst in [null, 70.0, 100.0]) {
+        final result = service.analyze(
+          prediction: prediction,
+          observations: [observation(id: 'G01', confidence: 1)],
+          fuzzyInputs: FuzzyInputs(
+            severityPercent: 20,
+            daysAfterTransplant: hst,
+            relativeHumidityPercent: 70,
+          ),
+          diseaseDetail: details.getDetail(prediction.label),
+        );
+
+        expect(result.recommendations.single.content, isNot(contains('Urea')));
+      }
+    },
+  );
+
+  test('pestisida kimia tidak direkomendasikan saat CF belum meyakinkan', () {
+    final prediction = const ScanPrediction(
+      label: ConditionLabel.blast,
+      confidence: 0.9,
+      isSimulated: false,
+    );
+    final result = DiseaseAnalysisService.fromNotebookDraft().analyze(
+      prediction: prediction,
+      observations: [observation(confidence: 0.4)],
+      fuzzyInputs: const FuzzyInputs(
+        severityPercent: 50,
+        daysAfterTransplant: 40,
+        relativeHumidityPercent: 70,
+      ),
+      diseaseDetail: details.getDetail(prediction.label),
+    );
+
+    expect(result.diagnosisCertain, isFalse);
+    expect(result.chemicalActionLevel, ChemicalActionLevel.notNeeded);
+  });
+
+  test('pestisida kimia tidak direkomendasikan pada fase pematangan', () {
+    final prediction = const ScanPrediction(
+      label: ConditionLabel.bacterialLeafBlight,
+      confidence: 0.9,
+      isSimulated: false,
+    );
+    final result = DiseaseAnalysisService.fromNotebookDraft().analyze(
+      prediction: prediction,
+      observations: [observation(id: 'G01', confidence: 1)],
+      fuzzyInputs: const FuzzyInputs(
+        severityPercent: 50,
+        daysAfterTransplant: 100,
+        relativeHumidityPercent: 70,
+      ),
+      diseaseDetail: details.getDetail(prediction.label),
+    );
+
+    expect(result.diagnosisCertain, isTrue);
+    expect(result.chemicalActionLevel, ChemicalActionLevel.notNeeded);
+    expect(
+      result.recommendations.single.category,
+      'Panduan awal berdasarkan referensi; jangan otomatis menyemprot',
+    );
+  });
+
   test('service membandingkan CF dengan CNN tanpa menyatukan probabilitas', () {
     final service = DiseaseAnalysisService.fromNotebookDraft();
     final result = service.analyze(
@@ -279,6 +435,42 @@ void main() {
     expect(result.diagnosisCertain, isTrue);
     expect(result.chemicalActionLevel, ChemicalActionLevel.recommended);
   });
+
+  test(
+    'CF threshold exact dan margin kecil menentukan status belum meyakinkan',
+    () {
+      final prediction = const ScanPrediction(
+        label: ConditionLabel.bacterialLeafBlight,
+        confidence: 0.9,
+        isSimulated: false,
+      );
+      final service = DiseaseAnalysisService(
+        expertRules: [
+          rule(
+            id: 'top',
+            condition: ConditionLabel.bacterialLeafBlight,
+            weight: 0.6,
+          ),
+          rule(id: 'second', condition: ConditionLabel.blast, weight: 0.5),
+        ],
+        fuzzyEngine: engine,
+      );
+      final result = service.analyze(
+        prediction: prediction,
+        observations: [
+          observation(id: 'top', confidence: 1),
+          observation(id: 'second', confidence: 1),
+        ],
+        fuzzyInputs: const FuzzyInputs(),
+        diseaseDetail: details.getDetail(prediction.label),
+      );
+
+      expect(DiseaseAnalysisService.certaintyThreshold, 0.50);
+      expect(DiseaseAnalysisService.certaintyMarginThreshold, 0.15);
+      expect(result.diagnosisCertain, isFalse);
+      expect(result.diagnosisCandidateScore, closeTo(0.6, 1e-10));
+    },
+  );
 
   test('service sehat hanya menyediakan materi perawatan', () {
     final result = DiseaseAnalysisService.fromNotebookDraft().analyze(

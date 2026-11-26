@@ -1,5 +1,18 @@
 import '../../knowledge/domain/condition_label.dart';
 
+enum SymptomAnswer {
+  tidak('Tidak', 0),
+  ragu('Ragu', 0.4),
+  cukupYakin('Cukup yakin', 0.6),
+  yakin('Yakin', 0.8),
+  sangatYakin('Sangat yakin', 1);
+
+  const SymptomAnswer(this.label, this.cfUser);
+
+  final String label;
+  final double cfUser;
+}
+
 class SymptomObservation {
   SymptomObservation({
     required this.symptomId,
@@ -209,6 +222,57 @@ class NotebookExpertRules {
   const NotebookExpertRules._();
 
   static const userConfidenceLevels = <double>[0, 0.4, 0.6, 0.8, 1];
+
+  static List<ExpertRule> get symptomQuestions => List.unmodifiable(
+    _uniqueSymptomRules,
+  );
+
+  static ({List<ExpertRule> primary, List<ExpertRule> differential})
+  adaptiveSymptomQuestions(ConditionLabel condition) {
+    final allQuestions = _uniqueSymptomRules;
+    final primaryIds = condition == ConditionLabel.healthy
+        ? const {'G01', 'G05', 'G08', 'G12'}
+        : _symptomRules
+              .where(
+                (rule) =>
+                    rule.condition == condition && rule.expertWeight > 0,
+              )
+              .map((rule) => rule.symptomId)
+              .toSet();
+    final differentialIds = <String>{
+      ...switch (condition) {
+        ConditionLabel.bacterialLeafBlight => const ['G05', 'G08', 'G12'],
+        ConditionLabel.blast => const ['G01', 'G08', 'G12'],
+        ConditionLabel.brownSpot => const ['G01', 'G05', 'G12'],
+        ConditionLabel.tungro => const ['G01', 'G05', 'G08'],
+        ConditionLabel.healthy => const ['G02', 'G06', 'G09', 'G13'],
+      },
+      ..._symptomRules
+          .where(
+            (rule) =>
+                rule.condition == condition && rule.expertWeight < 0,
+          )
+          .map((rule) => rule.symptomId),
+    }..removeAll(primaryIds);
+
+    return (
+      primary: List.unmodifiable(
+        allQuestions.where((question) => primaryIds.contains(question.symptomId)),
+      ),
+      differential: List.unmodifiable(
+        allQuestions.where(
+          (question) => differentialIds.contains(question.symptomId),
+        ),
+      ),
+    );
+  }
+
+  static final List<ExpertRule> _uniqueSymptomRules = List.unmodifiable(
+    _symptomRules.fold(<String, ExpertRule>{}, (questions, rule) {
+      questions.putIfAbsent(rule.symptomId, () => rule);
+      return questions;
+    }).values,
+  );
 
   static final List<ExpertRule> rules = List.unmodifiable([
     ..._symptomRules,

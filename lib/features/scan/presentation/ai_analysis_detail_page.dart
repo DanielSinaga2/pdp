@@ -41,7 +41,8 @@ class AiAnalysisDetailPage extends StatefulWidget {
 }
 
 class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
-  final Map<String, double?> _answers = {};
+  final Map<String, SymptomAnswer> _answers = {};
+  bool _showAllSymptoms = false;
   double? _severityPercent;
   double? _daysAfterTransplant;
   double? _relativeHumidity;
@@ -51,22 +52,19 @@ class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
   DiseaseAnalysisService get _service =>
       widget.analysisService ?? DiseaseAnalysisService.fromNotebookDraft();
 
-  List<ExpertRule> get _questions => NotebookExpertRules.rules
-      .where((rule) => !rule.isEnvironmental)
-      .fold(<String, ExpertRule>{}, (questions, rule) {
-        questions.putIfAbsent(rule.symptomId, () => rule);
-        return questions;
-      })
-      .values
-      .toList();
+  List<ExpertRule> get _questions => NotebookExpertRules.symptomQuestions;
+
+  ({List<ExpertRule> primary, List<ExpertRule> differential})
+  get _adaptiveQuestions =>
+      NotebookExpertRules.adaptiveSymptomQuestions(widget.prediction.label);
 
   List<SymptomObservation> get _observations => [
     for (final question in _questions)
-      if (_answers[question.symptomId] case final confidence?)
+      if (_answers[question.symptomId] case final answer?)
         SymptomObservation(
           symptomId: question.symptomId,
           symptomName: question.symptomName,
-          userConfidence: confidence,
+          userConfidence: answer.cfUser,
         ),
   ];
 
@@ -86,6 +84,24 @@ class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
   @override
   Widget build(BuildContext context) {
     final analysis = _analyze();
+    final adaptiveQuestions = _adaptiveQuestions;
+    final initiallyVisibleQuestions = [
+      ...adaptiveQuestions.primary,
+      ...adaptiveQuestions.differential,
+    ];
+    final additionalQuestions = _questions
+        .where(
+          (question) => !initiallyVisibleQuestions.any(
+            (visible) => visible.symptomId == question.symptomId,
+          ),
+        )
+        .toList();
+    final visibleQuestions = _showAllSymptoms
+        ? _questions
+        : initiallyVisibleQuestions;
+    final answeredVisibleQuestions = visibleQuestions
+        .where((question) => _answers.containsKey(question.symptomId))
+        .length;
     final lowConfidence =
         widget.prediction.confidence < widget.confidencePercent / 100;
     final isHealthy = widget.prediction.label == ConditionLabel.healthy;
@@ -164,7 +180,7 @@ class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
                 const SizedBox(height: 22),
                 _SectionHeading(
                   icon: Icons.center_focus_strong_outlined,
-                  title: 'Hasil CNN',
+                  title: 'Tahap 1 — Hasil CNN',
                 ),
                 _InfoCard(
                   children: [
@@ -233,29 +249,95 @@ class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
                 const SizedBox(height: 22),
                 _SectionHeading(
                   icon: Icons.fact_check_outlined,
-                  title: 'Gejala Notebook',
+                  title: 'Tahap 2 — Konfirmasi Gejala',
                 ),
                 const Text(
-                  'Pilih tingkat keyakinan sesuai pengamatan. Pilihan '
-                  '"Tidak" bernilai 0 dan tidak menambahkan evidence CF.',
+                  'Pertanyaan utama dipilih dari penyakit hasil CNN, disertai '
+                  'gejala pembeda. Pertanyaan kosong berarti belum diketahui; '
+                  'jawaban Tidak bernilai 0.',
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Terjawab: $answeredVisibleQuestions dari '
+                  '${visibleQuestions.length} pertanyaan yang ditampilkan',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: _darkGreen,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 10),
-                for (final question in _questions)
+                for (final question in adaptiveQuestions.primary)
                   _SymptomQuestionCard(
                     question: question,
                     confidence: _answers[question.symptomId],
                     onChanged: (value) =>
-                        setState(() => _answers[question.symptomId] = value),
+                        setState(() {
+                          if (value == null) {
+                            _answers.remove(question.symptomId);
+                          } else {
+                            _answers[question.symptomId] = value;
+                          }
+                        }),
+                  ),
+                if (adaptiveQuestions.differential.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Gejala pembeda',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: _darkGreen,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  for (final question in adaptiveQuestions.differential)
+                    _SymptomQuestionCard(
+                      question: question,
+                      confidence: _answers[question.symptomId],
+                      onChanged: (value) => setState(() {
+                        if (value == null) {
+                          _answers.remove(question.symptomId);
+                        } else {
+                          _answers[question.symptomId] = value;
+                        }
+                      }),
+                    ),
+                ],
+                if (additionalQuestions.isNotEmpty)
+                  Card(
+                    color: Colors.white,
+                    child: ExpansionTile(
+                      title: Text(
+                        _showAllSymptoms
+                            ? 'Sembunyikan gejala tambahan'
+                            : 'Lihat gejala tambahan '
+                                  '(${additionalQuestions.length})',
+                      ),
+                      onExpansionChanged: (expanded) =>
+                          setState(() => _showAllSymptoms = expanded),
+                      children: [
+                        for (final question in additionalQuestions)
+                          _SymptomQuestionCard(
+                            question: question,
+                            confidence: _answers[question.symptomId],
+                            onChanged: (value) => setState(() {
+                              if (value == null) {
+                                _answers.remove(question.symptomId);
+                              } else {
+                                _answers[question.symptomId] = value;
+                              }
+                            }),
+                          ),
+                      ],
+                    ),
                   ),
                 const SizedBox(height: 22),
                 _SectionHeading(
                   icon: Icons.cloud_outlined,
-                  title: 'Data Lingkungan dan Tanaman',
+                  title: 'Tahap 3 — Kondisi Lingkungan',
                 ),
                 const Text(
-                  'Input ini digunakan sesuai variabel notebook. Suhu, hujan, '
-                  'RH, dan HST harus lengkap agar bukti lingkungan dapat '
-                  'ditambahkan ke perhitungan CF.',
+                  'Masukkan data pengamatan aktual. Derajat keanggotaan E01–E06 '
+                  'dihitung otomatis; aplikasi tidak mengambil data dari API '
+                  'cuaca.',
                 ),
                 _FuzzyInputCard(
                   title: 'Keparahan gejala',
@@ -299,15 +381,15 @@ class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
                 const SizedBox(height: 22),
                 _SectionHeading(
                   icon: Icons.calculate_outlined,
-                  title: 'Certainty Factor',
+                  title: 'Tahap 4 — Hasil Diagnosis',
                 ),
                 _CertaintyCard(
                   result: analysis.certaintyResult,
                   allResults: analysis.certaintyResults,
                   observations: _observations,
-                  hasPartialAnswers: _answers.values.any(
-                    (confidence) => confidence != null,
-                  ),
+                  hasPartialAnswers: _answers.isNotEmpty,
+                  diagnosisCertain: analysis.diagnosisCertain,
+                  diagnosisCandidate: analysis.diagnosisCandidate,
                 ),
                 const SizedBox(height: 22),
                 _SectionHeading(
@@ -460,8 +542,8 @@ class _SymptomQuestionCard extends StatelessWidget {
   });
 
   final ExpertRule question;
-  final double? confidence;
-  final ValueChanged<double?> onChanged;
+  final SymptomAnswer? confidence;
+  final ValueChanged<SymptomAnswer?> onChanged;
 
   @override
   Widget build(BuildContext context) => Card(
@@ -474,25 +556,21 @@ class _SymptomQuestionCard extends StatelessWidget {
         children: [
           Text(question.symptomName),
           const SizedBox(height: 10),
-          DropdownButtonFormField<double>(
+          DropdownButtonFormField<SymptomAnswer>(
             key: ValueKey('symptom_${question.symptomId}'),
             initialValue: confidence,
             decoration: const InputDecoration(
-              labelText: 'Keyakinan sesuai notebook',
+              labelText: 'Tingkat keyakinan',
               border: OutlineInputBorder(),
             ),
-            items: const [
-              DropdownMenuItem(value: 0, child: Text('Tidak (0.0)')),
-              DropdownMenuItem(value: 0.4, child: Text('Ragu (0.4)')),
-              DropdownMenuItem(
-                value: 0.6,
-                child: Text('Cukup yakin (0.6)'),
-              ),
-              DropdownMenuItem(value: 0.8, child: Text('Yakin (0.8)')),
-              DropdownMenuItem(
-                value: 1,
-                child: Text('Sangat yakin (1.0)'),
-              ),
+            items: [
+              for (final answer in SymptomAnswer.values)
+                DropdownMenuItem(
+                  value: answer,
+                  child: Text(
+                    '${answer.label} (${answer.cfUser.toStringAsFixed(1)})',
+                  ),
+                ),
             ],
             onChanged: onChanged,
           ),
@@ -508,12 +586,16 @@ class _CertaintyCard extends StatelessWidget {
     required this.allResults,
     required this.observations,
     required this.hasPartialAnswers,
+    required this.diagnosisCertain,
+    required this.diagnosisCandidate,
   });
 
   final CertaintyResult result;
   final Map<ConditionLabel, CertaintyResult> allResults;
   final List<SymptomObservation> observations;
   final bool hasPartialAnswers;
+  final bool diagnosisCertain;
+  final ConditionLabel? diagnosisCandidate;
 
   @override
   Widget build(BuildContext context) {
@@ -535,6 +617,22 @@ class _CertaintyCard extends StatelessWidget {
     return _InfoCard(
       children: [
         _Notice(text: message, warning: !result.isCalculated),
+        const SizedBox(height: 8),
+        _Notice(
+          text: diagnosisCertain
+              ? 'Diagnosis meyakinkan: ${_conditionName(diagnosisCandidate)} '
+                    'memenuhi CF ≥ '
+                    '${DiseaseAnalysisService.certaintyThreshold.toStringAsFixed(2)} '
+                    'dan margin ≥ '
+                    '${DiseaseAnalysisService.certaintyMarginThreshold.toStringAsFixed(2)}.'
+              : diagnosisCandidate == null
+              ? 'Diagnosis belum meyakinkan: belum ada evidence CF yang dapat '
+                    'digunakan.'
+              : 'Diagnosis belum meyakinkan. Kandidat tertinggi: '
+                    '${_conditionName(diagnosisCandidate)}; hasil tidak '
+                    'dipaksakan sebagai diagnosis final.',
+          warning: !diagnosisCertain,
+        ),
         const SizedBox(height: 10),
         const Text(
           'CF evidence = CF pakar bertanda × keyakinan pengguna. '
@@ -542,11 +640,10 @@ class _CertaintyCard extends StatelessWidget {
           'CF akhir = (CF+ − CF−) / (1 − min(CF+, CF−)).',
         ),
         for (final entry in allResults.entries)
-          if (entry.value.score != null)
-            Text(
-              '${_conditionName(entry.key)}: '
-              '${entry.value.score!.toStringAsFixed(3)}',
-            ),
+          Text(
+            '${_conditionName(entry.key)}: '
+            '${entry.value.score == null ? 'Belum dihitung' : 'CF ${entry.value.score!.toStringAsFixed(3)} · keyakinan ${(entry.value.score! * 100).toStringAsFixed(1)}%'}',
+          ),
         if (observations.isNotEmpty) ...[
           const SizedBox(height: 12),
           const Text('Evidence gejala yang dipilih:'),
@@ -740,6 +837,13 @@ class _RecommendationCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(recommendation.content),
+          const SizedBox(height: 10),
+          const _Notice(
+            text: 'Dosis bersifat indikatif dan perlu disesuaikan dengan '
+                'kondisi lahan, hasil uji tanah, serta rekomendasi penyuluh '
+                'atau ahli pertanian.',
+            warning: true,
+          ),
         ],
       ),
     ),

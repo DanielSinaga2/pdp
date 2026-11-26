@@ -241,6 +241,74 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('pertanyaan gejala adaptif dan gejala tambahan dapat dibuka', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AiAnalysisDetailPage(
+          photo: null,
+          prediction: const ScanPrediction(
+            label: ConditionLabel.blast,
+            confidence: 0.82,
+            isSimulated: false,
+          ),
+          detail: details.getDetail(ConditionLabel.blast),
+          confidencePercent: 75,
+        ),
+      ),
+    );
+
+    await _ensureVisible(tester, find.text('Bercak berbentuk belah ketupat'));
+    expect(find.text('Bercak berbentuk belah ketupat'), findsOneWidget);
+    await _ensureVisible(
+      tester,
+      find.text('Garis basah/kekuningan memanjang di tepi daun'),
+    );
+    expect(
+      find.text('Garis basah/kekuningan memanjang di tepi daun'),
+      findsOneWidget,
+    );
+    expect(find.text('Tanaman kerdil dan anakan sedikit'), findsNothing);
+    await _ensureVisible(
+      tester,
+      find.text('Terjawab: 0 dari 9 pertanyaan yang ditampilkan'),
+    );
+    expect(
+      find.text('Terjawab: 0 dari 9 pertanyaan yang ditampilkan'),
+      findsOneWidget,
+    );
+
+    await _selectDropdown(tester, const ValueKey('symptom_G05'), 'Ragu (0.4)');
+    await _ensureVisible(
+      tester,
+      find.text('Terjawab: 1 dari 9 pertanyaan yang ditampilkan'),
+    );
+    expect(
+      find.text('Terjawab: 1 dari 9 pertanyaan yang ditampilkan'),
+      findsOneWidget,
+    );
+
+    final additionalSymptoms = find.text('Lihat gejala tambahan (7)');
+    await _ensureVisible(tester, additionalSymptoms);
+    await tester.tap(additionalSymptoms);
+    await tester.pumpAndSettle();
+    await _ensureVisible(
+      tester,
+      find.text('Tanaman kerdil dan anakan sedikit'),
+    );
+    expect(find.text('Tanaman kerdil dan anakan sedikit'), findsOneWidget);
+    await _ensureVisible(
+      tester,
+      find.text('Terjawab: 1 dari 16 pertanyaan yang ditampilkan'),
+    );
+    expect(
+      find.text('Terjawab: 1 dari 16 pertanyaan yang ditampilkan'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('hasil fuzzy kembali ke hasil scan tanpa prediksi ulang', (
     tester,
   ) async {

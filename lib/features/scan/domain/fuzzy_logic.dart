@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import '../../knowledge/domain/condition_label.dart';
 
 class TrapezoidalMembership {
@@ -283,6 +285,9 @@ class FuzzyConfiguration {
 class FuzzyLogicEngine {
   const FuzzyLogicEngine(this.configuration);
 
+  static const int sharpenPower = 3;
+  static const double ureaStopAfterHst = 60;
+
   final FuzzyConfiguration configuration;
 
   List<EnvironmentalEvidenceDegree> environmentalEvidence(FuzzyInputs input) {
@@ -379,7 +384,7 @@ class FuzzyLogicEngine {
       final cf = certaintyScores[rule.condition];
       if (cf == null || !cf.isFinite) continue;
       final cfWeight = (cf > 0 ? cf : 0).clamp(0.0, 1.0).toDouble();
-      final sharpenedCf = cfWeight * cfWeight * cfWeight;
+      final sharpenedCf = math.pow(cfWeight, sharpenPower).toDouble();
       if (sharpenedCf <= 0) continue;
       var membershipStrength = 1.0;
       var valid = true;
@@ -423,7 +428,8 @@ class FuzzyLogicEngine {
       },
       activeRules: List.unmodifiable(activations),
       ureaFactor: ureaFactor,
-      ureaFactorAfterGrowthStage: hst > 60 ? 0 : ureaFactor,
+      ureaFactorAfterGrowthStage:
+          hst > ureaStopAfterHst ? 0 : ureaFactor,
       kclFactor: kclNumerator / weightSum,
       chemicalScore: chemicalNumerator / weightSum,
       message: configuration.sourceNote,

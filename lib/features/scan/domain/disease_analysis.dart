@@ -52,6 +52,9 @@ class DiseaseAnalysisResult {
 }
 
 class DiseaseAnalysisService {
+  static const double certaintyThreshold = 0.50;
+  static const double certaintyMarginThreshold = 0.15;
+
   DiseaseAnalysisService({
     required Iterable<ExpertRule> expertRules,
     required this.fuzzyEngine,
@@ -106,7 +109,9 @@ class DiseaseAnalysisService {
     final topScore = top?.score ?? 0;
     final secondScore = ranked.length > 1 ? ranked[1].score ?? 0 : 0.0;
     final diagnosisCertain =
-        top != null && topScore >= 0.50 && topScore - secondScore >= 0.15;
+        top != null &&
+        topScore >= certaintyThreshold &&
+        topScore - secondScore >= certaintyMarginThreshold;
     final conflicting =
         diagnosisCertain && top.condition != prediction.label;
     final fuzzy = fuzzyEngine.calculate(
@@ -125,6 +130,7 @@ class DiseaseAnalysisService {
       prediction.label,
       diseaseDetail,
       chemicalAction,
+      daysAfterTransplant: fuzzyInputs.daysAfterTransplant,
     );
     final hasCertainty = hasEvidence;
     final complete = hasCertainty && fuzzy.isCalculated;
@@ -207,14 +213,23 @@ class DiseaseAnalysisService {
     ConditionLabel condition,
     DiseaseDetail detail,
     ChemicalActionLevel? chemicalAction,
+    {required double? daysAfterTransplant}
   ) {
     final management = detail.management?.trim();
     if (management == null || management.isEmpty) return const [];
+    final canRecommendUrea =
+        daysAfterTransplant != null &&
+        daysAfterTransplant.isFinite &&
+        daysAfterTransplant >= 0 &&
+        daysAfterTransplant <= FuzzyLogicEngine.ureaStopAfterHst;
+    final recommendationContent = canRecommendUrea
+        ? management
+        : _withoutUreaAdvice(management);
     if (condition == ConditionLabel.healthy) {
       return [
         AnalysisRecommendation(
           category: 'Perawatan tanaman sehat',
-          content: management,
+          content: recommendationContent,
         ),
       ];
     }
@@ -228,6 +243,39 @@ class DiseaseAnalysisService {
         'Panduan awal berdasarkan referensi; jangan otomatis menyemprot',
       null => 'Panduan awal berdasarkan referensi aplikasi',
     };
-    return [AnalysisRecommendation(category: category, content: management)];
+    return [
+      AnalysisRecommendation(
+        category: category,
+        content: recommendationContent,
+      ),
+    ];
   }
+}
+
+String _withoutUreaAdvice(String management) {
+  final keptLines = <String>[];
+  var suppressWrappedLines = false;
+  for (final line in management.split('\n')) {
+    final trimmed = line.trim();
+    if (trimmed.isEmpty) {
+      suppressWrappedLines = false;
+      if (keptLines.isNotEmpty && keptLines.last.isNotEmpty) {
+        keptLines.add('');
+      }
+      continue;
+    }
+
+    if (trimmed.startsWith('•')) {
+      suppressWrappedLines = trimmed.toLowerCase().contains('urea');
+      if (!suppressWrappedLines) keptLines.add(line);
+      continue;
+    }
+
+    if (trimmed.toLowerCase().contains('urea')) {
+      suppressWrappedLines = true;
+      continue;
+    }
+    if (!suppressWrappedLines) keptLines.add(line);
+  }
+  return keptLines.join('\n').trim();
 }

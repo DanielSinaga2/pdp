@@ -98,6 +98,12 @@ class ScanResultPage extends StatelessWidget {
                                         .toStringAsFixed(3),
                             ),
                             _AnalysisStatusLine(
+                              title: 'Status diagnosis',
+                              value: analysis.diagnosisCertain
+                                  ? 'Meyakinkan'
+                                  : 'Belum meyakinkan',
+                            ),
+                            _AnalysisStatusLine(
                               title: 'Input keparahan',
                               value: analysis.severityInputPercent == null
                                   ? 'Belum diisi'
