@@ -4,12 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../history/domain/history_repository.dart';
-import '../../history/presentation/history_cubit.dart';
-import '../../history/presentation/history_page.dart';
 import '../../knowledge/domain/disease_detail_repository.dart';
 import '../../settings/domain/settings_repository.dart';
-import '../../settings/presentation/settings_page.dart';
 import '../domain/photo_repository.dart';
+import 'app_navigation.dart';
 import 'scan_bloc.dart';
 import 'scan_result_page.dart';
 import 'scan_viewfinder.dart';
@@ -59,38 +57,10 @@ class ScanPage extends StatelessWidget {
         final photo = state.photo;
 
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('PadiSehat'),
-            actions: [
-              IconButton(
-                tooltip: 'Riwayat Scan',
-                icon: const Icon(Icons.history),
-                onPressed: state.isBusy ? null : () {
-                  Navigator.of(context).push<void>(
-                    MaterialPageRoute<void>(
-                      builder: (_) => BlocProvider(
-                        create: (_) => HistoryCubit(history)..load(),
-                        child: HistoryPage(
-                          details: details,
-                          repository: history,
-                          confidencePercent: confidencePercent,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              IconButton(
-                tooltip: 'Pengaturan',
-                icon: const Icon(Icons.settings_outlined),
-                onPressed: state.isBusy ? null : () {
-                  Navigator.of(context).push<void>(
-                    MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
-                  );
-                },
-              ),
-            ],
+          bottomNavigationBar: const AppNavigation(
+            current: AppDestination.scan,
           ),
+          appBar: AppBar(title: const Text('PadiSehat')),
           body: SafeArea(
             child: Center(
               child: ConstrainedBox(
@@ -98,7 +68,10 @@ class ScanPage extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                   children: [
-                    Text('Scan daun padi', style: theme.textTheme.headlineMedium),
+                    Text(
+                      'Scan daun padi',
+                      style: theme.textTheme.headlineMedium,
+                    ),
                     const SizedBox(height: 8),
                     const Text(
                       'Ambil foto daun padi atau pilih foto dari galeri.',
@@ -133,7 +106,8 @@ class ScanPage extends StatelessWidget {
                     OutlinedButton.icon(
                       onPressed: state.isBusy
                           ? null
-                          : () => bloc.add(const PickPhoto(PhotoSource.gallery)),
+                          : () =>
+                                bloc.add(const PickPhoto(PhotoSource.gallery)),
                       icon: const Icon(Icons.photo_library_outlined),
                       label: Text(
                         photo == null ? 'Pilih Foto dari Galeri' : 'Ganti Foto',
@@ -175,9 +149,8 @@ class ScanPage extends StatelessWidget {
       return;
     }
 
-    final photo = await Navigator.of(context).push<Uint8List>(
-      MaterialPageRoute<Uint8List>(builder: builder),
-    );
+    final photo = await Navigator.of(context)
+        .push<Uint8List>(MaterialPageRoute<Uint8List>(builder: builder));
     if (context.mounted && photo != null) bloc.add(CapturedPhoto(photo));
   }
 }

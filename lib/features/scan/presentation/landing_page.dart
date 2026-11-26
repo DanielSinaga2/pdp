@@ -1,10 +1,13 @@
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:material_ui/material_ui.dart';
 
+import 'app_navigation.dart';
+
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
 
   static const scanRoute = '/scan';
+  static const homeRoute = '/beranda';
   static const historyRoute = '/riwayat';
   static const settingsRoute = '/pengaturan';
 
@@ -19,6 +22,7 @@ class LandingPage extends StatelessWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: overlays.copyWith(statusBarColor: Colors.transparent),
       child: Scaffold(
+        bottomNavigationBar: const AppNavigation(current: AppDestination.home),
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
@@ -50,21 +54,31 @@ class LandingPage extends StatelessWidget {
                   const _RiceFieldHero(),
                   const SizedBox(height: 26),
                   Text(
-                    'Fitur',
+                    'Mengenal teknologi kami',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const _FeatureCard(
-                    label: 'Scan',
-                    description: 'Ambil foto atau pilih dari galeri',
-                    icon: Icons.document_scanner_outlined,
-                    route: scanRoute,
-                    primary: true,
+                  const _ModelCard(),
+                  const SizedBox(height: 14),
+                  Text(
+                    'Yang bisa Anda lakukan',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  const _SecondaryFeatures(),
+                  const SizedBox(height: 8),
+                  const _CapabilityRow(
+                    icon: Icons.photo_camera_outlined,
+                    title: 'Scan daun padi',
+                    description: 'Foto dari kamera atau galeri',
+                  ),
+                  const _CapabilityRow(
+                    icon: Icons.history_outlined,
+                    title: 'Pantau riwayat',
+                    description: 'Simpan dan buka kembali hasil scan',
+                  ),
                 ],
               ),
             ),
@@ -149,136 +163,105 @@ class _RiceFieldHero extends StatelessWidget {
   }
 }
 
-class _SecondaryFeatures extends StatelessWidget {
-  const _SecondaryFeatures();
+class _ModelCard extends StatelessWidget {
+  const _ModelCard();
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const gap = 10.0;
-        final stack =
-            constraints.maxWidth < 304 ||
-            MediaQuery.textScalerOf(context).scale(14) > 18;
-        const history = _FeatureCard(
-          label: 'Riwayat',
-          description: 'Lihat hasil scan',
-          icon: Icons.history,
-          route: LandingPage.historyRoute,
-        );
-        const settings = _FeatureCard(
-          label: 'Pengaturan',
-          description: 'Tema dan ambang',
-          icon: Icons.settings_outlined,
-          route: LandingPage.settingsRoute,
-        );
-
-        if (stack) {
-          return const Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [history, SizedBox(height: gap), settings],
-          );
-        }
-
-        return const IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: history),
-              SizedBox(width: gap),
-              Expanded(child: settings),
-            ],
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: colors.primaryContainer,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: colors.primary,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(11),
+              child: Icon(Icons.memory_rounded, color: colors.onPrimary),
+            ),
           ),
-        );
-      },
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'EfficientNetB0 + TensorFlow Lite',
+                  style: Theme.of(context).textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Model klasifikasi citra menganalisis foto langsung di perangkat. Data foto tidak perlu dikirim ke internet.',
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: colors.onPrimaryContainer, height: 1.4),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Mengenali 5 kondisi daun padi',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colors.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _FeatureCard extends StatelessWidget {
-  const _FeatureCard({
-    required this.label,
-    required this.description,
+class _CapabilityRow extends StatelessWidget {
+  const _CapabilityRow({
     required this.icon,
-    required this.route,
-    this.primary = false,
+    required this.title,
+    required this.description,
   });
 
-  final String label;
-  final String description;
   final IconData icon;
-  final String route;
-  final bool primary;
+  final String title;
+  final String description;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final background = primary
-        ? colors.primaryContainer
-        : colors.surfaceContainerLow;
-    final foreground = primary ? colors.onPrimaryContainer : colors.onSurface;
-
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      color: background,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(
-          color: primary ? Colors.transparent : colors.outlineVariant,
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => Navigator.of(context).pushNamed<void>(route),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: primary ? colors.primary : colors.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(9),
-                  child: Icon(
-                    icon,
-                    size: 20,
-                    color: primary ? colors.onPrimary : colors.primary,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, color: colors.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: foreground,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      description,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: primary ? foreground : colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                Text(
+                  description,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              if (primary) ...[
-                const SizedBox(width: 8),
-                Icon(Icons.arrow_forward_rounded, color: foreground),
               ],
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

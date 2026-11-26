@@ -7,6 +7,7 @@ import '../../knowledge/domain/condition_label.dart';
 import '../../knowledge/domain/disease_detail_repository.dart';
 import '../../scan/domain/prediction_repository.dart';
 import '../../scan/presentation/scan_result_page.dart';
+import '../../scan/presentation/app_navigation.dart';
 import '../domain/history_repository.dart';
 import 'history_cubit.dart';
 
@@ -28,6 +29,9 @@ class HistoryPage extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<HistoryCubit>();
         return Scaffold(
+          bottomNavigationBar: const AppNavigation(
+            current: AppDestination.history,
+          ),
           appBar: AppBar(title: const Text('Riwayat Scan')),
           body: SafeArea(
             child: Column(

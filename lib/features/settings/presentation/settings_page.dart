@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../domain/settings_repository.dart';
+import '../../scan/presentation/app_navigation.dart';
 import 'settings_cubit.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -23,6 +24,9 @@ class _SettingsPageState extends State<SettingsPage> {
         final percent = _draftPercent ?? state.settings.confidencePercent;
 
         return Scaffold(
+          bottomNavigationBar: const AppNavigation(
+            current: AppDestination.settings,
+          ),
           appBar: AppBar(title: const Text('Pengaturan')),
           body: SafeArea(
             child: Center(
@@ -59,7 +63,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       label: '$percent%',
                       semanticFormatterCallback: (value) => '${value.round()}%',
                       onChanged: state.canEdit
-                          ? (value) => setState(() => _draftPercent = value.round())
+                          ? (value) =>
+                                setState(() => _draftPercent = value.round())
                           : null,
                       onChangeEnd: state.canEdit
                           ? (value) {

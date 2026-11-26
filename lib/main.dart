@@ -8,6 +8,7 @@ import 'features/history/presentation/history_page.dart';
 import 'features/knowledge/domain/disease_detail_repository.dart';
 import 'features/scan/presentation/camera_scan_page.dart';
 import 'features/scan/presentation/landing_page.dart';
+import 'features/scan/presentation/onboarding_page.dart';
 import 'features/scan/presentation/scan_bloc.dart';
 import 'features/scan/presentation/scan_page.dart';
 import 'features/settings/domain/settings_repository.dart';
@@ -38,9 +39,8 @@ class PadiSehatApp extends StatelessWidget {
           return MaterialApp(
             title: 'PadiSehat',
             theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: seed,
-              ).copyWith(surface: const Color(0xFFF1F0EA)),
+              colorScheme: ColorScheme.fromSeed(seedColor: seed)
+                  .copyWith(surface: const Color(0xFFF1F0EA)),
             ),
             darkTheme: ThemeData(
               colorScheme: ColorScheme.fromSeed(
@@ -53,8 +53,9 @@ class PadiSehatApp extends StatelessWidget {
               AppThemePreference.light => ThemeMode.light,
               AppThemePreference.dark => ThemeMode.dark,
             },
-            home: const LandingPage(),
+            home: const OnboardingPage(),
             routes: {
+              LandingPage.homeRoute: (_) => const LandingPage(),
               LandingPage.scanRoute: (_) =>
                   BlocSelector<SettingsCubit, SettingsState, int>(
                     selector: (state) => state.settings.confidencePercent,
@@ -62,7 +63,8 @@ class PadiSehatApp extends StatelessWidget {
                       details: getIt<DiseaseDetailRepository>(),
                       history: getIt<HistoryRepository>(),
                       confidencePercent: confidencePercent,
-                      cameraPage: !platform.kIsWeb &&
+                      cameraPage:
+                          !platform.kIsWeb &&
                               platform.defaultTargetPlatform ==
                                   platform.TargetPlatform.android
                           ? (_) => const CameraScanPage()
