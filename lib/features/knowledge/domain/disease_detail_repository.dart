@@ -6,6 +6,7 @@ class DiseaseDetail {
     this.symptoms,
     this.cause,
     this.management,
+    this.analysisManagement,
     this.needsReview = true,
   });
 
@@ -13,6 +14,7 @@ class DiseaseDetail {
   final String? symptoms;
   final String? cause;
   final String? management;
+  final String? analysisManagement;
   final bool needsReview;
 }
 

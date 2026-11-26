@@ -21,6 +21,16 @@ class LocalDiseaseDetailRepository implements DiseaseDetailRepository {
           'Jaga kebersihan lahan dan saluran air, serta hindari pemupukan '
           'nitrogen berlebihan. Minta saran penyuluh setempat sebelum '
           'menggunakan pestisida.',
+      analysisManagement:
+          'Pemupukan:\n'
+          '• Kurangi Urea 20-60% dari dosis anjuran setempat (makin berat '
+          'serangan, makin besar pengurangannya) dan bagi menjadi 3 kali '
+          'pemberian. Hentikan Urea susulan selama gejala masih aktif.\n'
+          '• Tambah KCl sekitar 30-50% dari dosis anjuran agar jaringan '
+          'tanaman lebih kuat.\n'
+          '• Setelah fase berbunga, jangan beri Urea lagi.\n\n'
+          'Dosis disesuaikan dengan uji tanah, varietas, dan anjuran '
+          'penyuluh/BPTP setempat.',
     ),
     ConditionLabel.blast => const DiseaseDetail(
       name: 'Blast',
@@ -37,6 +47,16 @@ class LocalDiseaseDetailRepository implements DiseaseDetailRepository {
           'tanaman terutama saat kondisi lembap, bersihkan tanaman padi '
           'relawan dan sisa tanaman sakit, serta konsultasikan pengendalian '
           'dengan penyuluh setempat.',
+      analysisManagement:
+          'Pemupukan:\n'
+          '• Kurangi Urea 20-60% dari dosis anjuran setempat (makin berat '
+          'serangan, makin besar pengurangannya) dan bagi menjadi 3 kali. '
+          'Nitrogen berlebih sangat memicu blast.\n'
+          '• Tambah KCl sekitar 30-50% dari dosis anjuran.\n'
+          '• Tambahkan sumber silika (kompos jerami atau abu sekam).\n'
+          '• Hindari Urea susulan menjelang bunting dan berbunga.\n\n'
+          'Dosis disesuaikan dengan uji tanah, varietas, dan anjuran '
+          'penyuluh/BPTP setempat.',
     ),
     ConditionLabel.brownSpot => const DiseaseDetail(
       name: 'Bercak coklat',
@@ -53,6 +73,16 @@ class LocalDiseaseDetailRepository implements DiseaseDetailRepository {
           'serta pemupukan tetap berimbang, dan kelola sisa tanaman setelah '
           'panen. Untuk langkah pengendalian lebih lanjut, mintalah saran '
           'penyuluh setempat.',
+      analysisManagement:
+          'Pemupukan:\n'
+          '• Jangan mengurangi pupuk dasar; penuhi dosis N-P-K anjuran '
+          'setempat karena penyakit ini berkaitan dengan kekurangan hara.\n'
+          '• Tambah KCl sekitar 20-50% dari dosis anjuran.\n'
+          '• Gunakan ZA sebagai sebagian sumber nitrogen bila tanah miskin '
+          'belerang.\n'
+          '• Tambahkan bahan organik atau kompos jerami (sumber silika).\n\n'
+          'Dosis disesuaikan dengan uji tanah, varietas, dan anjuran '
+          'penyuluh/BPTP setempat.',
     ),
     ConditionLabel.tungro => const DiseaseDetail(
       name: 'Tungro',
@@ -69,6 +99,17 @@ class LocalDiseaseDetailRepository implements DiseaseDetailRepository {
           'cabut tanaman bergejala berat untuk mengurangi sumber penularan. '
           'Kendalikan tanaman padi relawan dan gulma inang, pantau wereng '
           'hijau, serta ikuti saran penyuluh setempat.',
+      analysisManagement:
+          'Pemupukan:\n'
+          '• Pupuk tidak menyembuhkan virus; fungsinya hanya membantu anakan '
+          'yang masih sehat.\n'
+          '• Lakukan pemupukan berimbang. Kurangi Urea sekitar 10-30% dari '
+          'dosis anjuran setempat karena tanaman yang terlalu rimbun menarik '
+          'wereng.\n'
+          '• Beri KCl cukup (sekitar 20% di atas dosis anjuran). Setelah fase '
+          'berbunga tidak perlu Urea.\n\n'
+          'Dosis disesuaikan dengan uji tanah, varietas, dan anjuran '
+          'penyuluh/BPTP setempat.',
     ),
     ConditionLabel.healthy => const DiseaseDetail(
       name: 'Sehat',
@@ -81,6 +122,15 @@ class LocalDiseaseDetailRepository implements DiseaseDetailRepository {
       management:
           'Lanjutkan pemantauan rutin, gunakan benih sehat, dan lakukan '
           'pemupukan serta pengairan sesuai kebutuhan tanaman.',
+      analysisManagement:
+          'Pemupukan:\n'
+          '• Lakukan pemupukan berimbang N-P-K sesuai anjuran setempat atau '
+          'hasil uji tanah.\n'
+          '• Bagi Urea menjadi 2-3 kali (awal tanam, fase anakan, sebelum '
+          'bunting) dan hentikan setelah fase berbunga.\n'
+          '• Beri KCl pada awal tanam dan saat fase primordia (bunting).\n\n'
+          'Dosis disesuaikan dengan uji tanah, varietas, dan anjuran '
+          'penyuluh/BPTP setempat.',
     ),
   };
 }

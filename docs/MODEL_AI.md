@@ -20,6 +20,11 @@ foto (Uint8List) ─► UiPhotoPreprocessor ─► LiteRtClassifierBackend ─�
 | `tools/konversi_tflite.py` | Keras -> TFLite (+ verifikasi). |
 | `tools/prediksi_referensi.py` | Prediksi referensi untuk satu foto, pembanding hasil aplikasi. |
 
+Metadata `assets/model/pemetaan.json` mencantumkan `cfg.BACKBONE` sebagai
+`efficientnetb0`; karena itu arsitektur model ditampilkan sebagai EfficientNetB0.
+Model yang dipakai aplikasi tetap model klasifikasi citra (`image`) dan inferensi
+dijalankan on-device menggunakan TensorFlow Lite.
+
 ## Langkah
 
 1. **Latih** dengan notebook `Paddy_Doctor_Multimodal_CF_Fuzzy.ipynb`; hasilnya
@@ -86,3 +91,88 @@ tambahkan label "tidak dikenali" pada `ConditionLabel` dan halaman hasil.
 
 * Model dilatih pada foto dari India (Paddy Doctor); uji pada foto sawah lokal sebelum dipakai petani.
 * Hasil adalah bantuan, bukan diagnosis; materi penanganan di aplikasi masih berstatus "perlu ditinjau".
+
+## Analisis hybrid CNN, Certainty Factor, dan Fuzzy
+
+Notebook `Paddy_Doctor_Multimodal_CF_Fuzzy.ipynb` yang dibagikan menjadi
+rujukan untuk rumus dan parameter di bagian ini. Notebook mengonfigurasi
+EfficientNetB0 sebagai backbone default dan menyediakan MobileNetV2 sebagai
+opsi. Berkas model aplikasi tetap ditentukan oleh metadata model yang terpasang.
+
+### Certainty Factor
+
+Implementasi di `lib/features/scan/domain/certainty_factor.dart` mengikuti
+`CF_USER`, `GEJALA`, `LINGKUNGAN`, dan `gabung_mycin` pada notebook:
+
+* Pilihan keyakinan pengguna: `tidak=0`, `ragu=0.4`, `cukup_yakin=0.6`,
+  `yakin=0.8`, dan `sangat_yakin=1.0`.
+* CF evidence = CF pakar bertanda × keyakinan pengguna. Bobot negatif
+  mengurangi dukungan penyakit terkait; jawaban `tidak` bernilai nol dan
+  tidak menambahkan evidence.
+* Bukti positif dan negatif masing-masing diagregasi:
+  `CF+ = 1 − Π(1 − CF positif)` dan
+  `CF− = 1 − Π(1 − |CF negatif|)`.
+* Nilai gabungan:
+  `(CF+ − CF−) / (1 − min(CF+, CF−))`. Jika penyebut nol atau sangat dekat
+  nol, notebook menetapkan hasil ke `0.0`.
+* Diagnosis CF dianggap yakin bila kandidat teratas minimal `0.50` dan
+  selisih terhadap kandidat kedua minimal `0.15`.
+
+Probabilitas CNN tetap terpisah dan tidak pernah dipakai sebagai MB, MD, bobot
+pakar, atau input CF. Modul memuat 16 gejala dan bobot pakar bertanda serta
+enam bukti lingkungan dari notebook. Bobot tersebut adalah aturan di notebook,
+bukan bukti bahwa bobot sudah divalidasi secara independen oleh ahli lapangan.
+CF tetap belum dihitung jika pengguna belum memasukkan evidence yang bernilai
+non-nol.
+
+Bukti lingkungan hanya ditambahkan jika suhu, RH, hujan tujuh hari, dan HST
+seluruhnya tersedia. Degree lingkungan dihitung dari membership notebook:
+RH tinggi, hujan lebat, suhu sejuk, cuaca kering, fase awal, dan fase akhir.
+
+### Fuzzy Logic
+
+`FuzzyConfiguration.fromNotebookDraft()` mengikuti membership trapezoid dan
+aturan `ATURAN` pada notebook. Variabel Sugeno adalah keparahan gejala (%),
+HST, dan RH (%). Suhu dan curah hujan dipakai untuk evidence CF lingkungan,
+bukan sebagai antecedent aturan Sugeno.
+
+Membership yang diterapkan sama dengan notebook:
+
+* Keparahan: ringan `(0,0,4,10)`, sedang `(4,12,20,30)`, berat `(20,35,100,100)`.
+* Fase tanaman: awal `(0,0,25,45)`, tengah `(30,45,55,70)`, akhir
+  `(55,75,150,150)`.
+* RH: rendah `(0,0,60,72)`, sedang `(62,72,80,88)`, tinggi `(80,90,100,100)`.
+* Suhu sejuk `(15,15,23,27)` dan hujan: rendah `(0,0,20,50)`, sedang
+  `(30,70,100,150)`, lebat `(100,150,400,400)`.
+
+Inferensi Sugeno orde-0 memakai `min` untuk AND. Bobot CF penyakit adalah
+`max(CF, 0)^3` (`SHARPEN=3`); kekuatan akhir aturan adalah derajat membership
+minimum dikali bobot CF tersebut. Output crisp berupa rata-rata terbobot untuk
+faktor Urea, faktor KCl, dan skor pengendalian kimia. Ambang skor kimia di
+notebook adalah `0.30` untuk siaga dan `0.60` untuk disarankan; rekomendasi
+kimia juga bergantung pada ambang diagnosis CF dan fase pemasakan.
+Notebook menerapkan pagar fase: faktor Urea dibuat nol setelah HST 60 pada
+fase berbunga/pengisian dan pemasakan; pengendalian kimia dinonaktifkan pada
+fase pemasakan (HST > 85).
+
+Notebook tidak menghasilkan kategori keparahan atau prioritas generik:
+keparahan adalah input, sedangkan output Sugeno adalah faktor dan skor di atas.
+Aplikasi tidak mengubah faktor menjadi dosis pupuk/pestisida dan tidak
+menampilkan bahan aktif pestisida dari output Sugeno. Aturan/membership berasal
+dari notebook, tetapi tetap perlu validasi ahli pertanian sebelum dipakai
+sebagai keputusan budidaya. Input fuzzy yang belum lengkap atau tidak ada CF
+positif menghasilkan status belum dihitung.
+
+### Integrasi dan rekomendasi
+
+`DiseaseAnalysisService` menerima `ScanPrediction`, observasi gejala,
+input lingkungan/fuzzy, dan `DiseaseDetail`. Service memakai hasil prediksi
+yang sudah ada. Jika diagnosis CF memenuhi ambang tetapi berbeda dari
+label CNN, service menandai perbedaan untuk diverifikasi.
+
+Pada branch utama, modul ini tersedia di lapisan domain. Halaman Scan,
+Hasil, dan Riwayat tetap memakai alur TFLite yang sudah ada. Formulir input
+gejala dan halaman detail analisis hybrid belum tersambung. Materi utama
+di `DiseaseDetail.management` dipakai halaman hasil. Materi tambahan di
+`DiseaseDetail.analysisManagement` dipakai oleh service bersama aturan fase
+tanam sebelum menghasilkan rekomendasi.
