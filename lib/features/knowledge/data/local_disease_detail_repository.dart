@@ -20,12 +20,8 @@ class LocalDiseaseDetailRepository implements DiseaseDetailRepository {
           'Gunakan varietas yang tahan, bibit sehat, dan pemupukan berimbang. '
           'Jaga kebersihan lahan dan saluran air, serta hindari pemupukan '
           'nitrogen berlebihan. Minta saran penyuluh setempat sebelum '
-<<<<<<< HEAD
           'menggunakan pestisida.',
       analysisManagement:
-=======
-          'menggunakan pestisida.\n\n'
->>>>>>> b5964916dfbca4f875866580e6dbe970d46a4ef0
           'Pemupukan:\n'
           '• Kurangi Urea 20-60% dari dosis anjuran setempat (makin berat '
           'serangan, makin besar pengurangannya) dan bagi menjadi 3 kali '
@@ -50,12 +46,8 @@ class LocalDiseaseDetailRepository implements DiseaseDetailRepository {
           'Tanam varietas tahan dan gunakan pemupukan berimbang. Pantau '
           'tanaman terutama saat kondisi lembap, bersihkan tanaman padi '
           'relawan dan sisa tanaman sakit, serta konsultasikan pengendalian '
-<<<<<<< HEAD
           'dengan penyuluh setempat.',
       analysisManagement:
-=======
-          'dengan penyuluh setempat.\n\n'
->>>>>>> b5964916dfbca4f875866580e6dbe970d46a4ef0
           'Pemupukan:\n'
           '• Kurangi Urea 20-60% dari dosis anjuran setempat (makin berat '
           'serangan, makin besar pengurangannya) dan bagi menjadi 3 kali. '
@@ -80,12 +72,8 @@ class LocalDiseaseDetailRepository implements DiseaseDetailRepository {
           'Gunakan benih sehat dan varietas yang sesuai, jaga kesuburan tanah '
           'serta pemupukan tetap berimbang, dan kelola sisa tanaman setelah '
           'panen. Untuk langkah pengendalian lebih lanjut, mintalah saran '
-<<<<<<< HEAD
           'penyuluh setempat.',
       analysisManagement:
-=======
-          'penyuluh setempat.\n\n'
->>>>>>> b5964916dfbca4f875866580e6dbe970d46a4ef0
           'Pemupukan:\n'
           '• Jangan mengurangi pupuk dasar; penuhi dosis N-P-K anjuran '
           'setempat karena penyakit ini berkaitan dengan kekurangan hara.\n'
@@ -110,12 +98,8 @@ class LocalDiseaseDetailRepository implements DiseaseDetailRepository {
           'Gunakan varietas tahan, tanam serempak bila memungkinkan, dan '
           'cabut tanaman bergejala berat untuk mengurangi sumber penularan. '
           'Kendalikan tanaman padi relawan dan gulma inang, pantau wereng '
-<<<<<<< HEAD
           'hijau, serta ikuti saran penyuluh setempat.',
       analysisManagement:
-=======
-          'hijau, serta ikuti saran penyuluh setempat.\n\n'
->>>>>>> b5964916dfbca4f875866580e6dbe970d46a4ef0
           'Pemupukan:\n'
           '• Pupuk tidak menyembuhkan virus; fungsinya hanya membantu anakan '
           'yang masih sehat.\n'
@@ -137,12 +121,8 @@ class LocalDiseaseDetailRepository implements DiseaseDetailRepository {
           'dianalisis.',
       management:
           'Lanjutkan pemantauan rutin, gunakan benih sehat, dan lakukan '
-<<<<<<< HEAD
           'pemupukan serta pengairan sesuai kebutuhan tanaman.',
       analysisManagement:
-=======
-          'pemupukan serta pengairan sesuai kebutuhan tanaman.\n\n'
->>>>>>> b5964916dfbca4f875866580e6dbe970d46a4ef0
           'Pemupukan:\n'
           '• Lakukan pemupukan berimbang N-P-K sesuai anjuran setempat atau '
           'hasil uji tanah.\n'

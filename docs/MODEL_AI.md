@@ -165,23 +165,13 @@ positif menghasilkan status belum dihitung.
 
 ### Integrasi dan rekomendasi
 
-<<<<<<< HEAD
 `DiseaseAnalysisService` menerima `ScanPrediction`, observasi gejala,
 input lingkungan/fuzzy, dan `DiseaseDetail`. Service memakai hasil prediksi
 yang sudah ada. Jika diagnosis CF memenuhi ambang tetapi berbeda dari
 label CNN, service menandai perbedaan untuk diverifikasi.
 
-Pada branch utama, modul ini tersedia di lapisan domain. Halaman Scan,
-Hasil, dan Riwayat tetap memakai alur TFLite yang sudah ada. Formulir input
-gejala dan halaman detail analisis hybrid belum tersambung. Materi utama
-di `DiseaseDetail.management` dipakai halaman hasil. Materi tambahan di
-`DiseaseDetail.analysisManagement` dipakai oleh service bersama aturan fase
-tanam sebelum menghasilkan rekomendasi.
-=======
-`DiseaseAnalysisService` menerima `ScanPrediction` yang sudah ada, observasi
-gejala, input lingkungan/fuzzy, dan `DiseaseDetail`. Service tidak memanggil
-predictor. Jika diagnosis CF memenuhi ambang tetapi berbeda dari label CNN,
-perbedaan ditampilkan agar pengguna memverifikasi gejala; kedua hasil tidak
-digabungkan. Materi rekomendasi aplikasi tetap berasal dari
-`DiseaseDetail.management`. Kondisi sehat hanya menampilkan perawatan tanaman.
->>>>>>> b5964916dfbca4f875866580e6dbe970d46a4ef0
+Halaman hasil dan riwayat memakai prediksi TFLite yang sudah tersimpan atau
+baru dihasilkan. Halaman detail analisis meneruskan input gejala dan
+lingkungan ke service. Materi utama di `DiseaseDetail.management` dipakai
+halaman hasil. Materi tambahan di `DiseaseDetail.analysisManagement` dipakai
+oleh service bersama aturan fase tanam sebelum menghasilkan rekomendasi.

@@ -318,13 +318,9 @@ void main() {
         isSimulated: false,
       );
 
-<<<<<<< HEAD
       final detail = details.getDetail(prediction.label);
       expect(detail.management, isNot(contains('Pemupukan:')));
       for (final hst in [null, 30.0, 70.0, 100.0]) {
-=======
-      for (final hst in [null, 70.0, 100.0]) {
->>>>>>> b5964916dfbca4f875866580e6dbe970d46a4ef0
         final result = service.analyze(
           prediction: prediction,
           observations: [observation(id: 'G01', confidence: 1)],
@@ -333,7 +329,6 @@ void main() {
             daysAfterTransplant: hst,
             relativeHumidityPercent: 70,
           ),
-<<<<<<< HEAD
           diseaseDetail: detail,
         );
 
@@ -341,12 +336,6 @@ void main() {
           result.recommendations.single.content,
           hst == 30.0 ? contains('Urea') : isNot(contains('Urea')),
         );
-=======
-          diseaseDetail: details.getDetail(prediction.label),
-        );
-
-        expect(result.recommendations.single.content, isNot(contains('Urea')));
->>>>>>> b5964916dfbca4f875866580e6dbe970d46a4ef0
       }
     },
   );
