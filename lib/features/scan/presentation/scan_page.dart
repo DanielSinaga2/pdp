@@ -10,6 +10,7 @@ import '../../settings/presentation/settings_page.dart';
 import '../domain/photo_repository.dart';
 import 'scan_bloc.dart';
 import 'scan_result_page.dart';
+import 'scan_viewfinder.dart';
 
 class ScanPage extends StatelessWidget {
   const ScanPage({
@@ -99,22 +100,10 @@ class ScanPage extends StatelessWidget {
                       'Ambil foto daun padi atau pilih foto dari galeri.',
                     ),
                     const SizedBox(height: 24),
-                    if (photo == null)
-                      Container(
-                        height: 220,
-                        decoration: BoxDecoration(
-                          color: colors.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.photo_outlined,
-                          size: 56,
-                          color: colors.onSurfaceVariant,
-                        ),
-                      )
-                    else
-                      ScanPhotoPreview(photo: photo),
+                    ScanViewfinder(
+                      photo: photo,
+                      isAnalyzing: state.status == ScanStatus.analyzing,
+                    ),
                     const SizedBox(height: 20),
                     if (state.errorMessage case final message?)
                       Padding(

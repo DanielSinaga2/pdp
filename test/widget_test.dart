@@ -365,16 +365,23 @@ void main() {
     await tester.tap(find.text('Pilih Foto dari Galeri'));
     await tester.pumpAndSettle();
 
+    final scanLine = find.byKey(const Key('scan-line'));
+    expect(scanLine, findsNothing);
     bloc.add(const AnalyzePhoto());
     bloc.add(const AnalyzePhoto());
     await tester.pump();
     await tester.pump();
 
+    expect(scanLine, findsOneWidget);
+    final initialPosition = tester.getCenter(scanLine).dy;
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(tester.getCenter(scanLine).dy, greaterThan(initialPosition));
     expect(prediction.calls, 1);
     expect(_analyzeButton(tester).onPressed, isNull);
     prediction.result.completeError(Exception('Prediction failed'));
     await tester.pumpAndSettle();
 
+    expect(scanLine, findsNothing);
     expect(find.text('Analisis gagal. Silakan coba lagi.'), findsOneWidget);
     expect(_analyzeButton(tester).onPressed, isNotNull);
   });
