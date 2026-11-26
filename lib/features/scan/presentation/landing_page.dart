@@ -18,14 +18,22 @@ class LandingPage extends StatelessWidget {
         leadingWidth: 64,
         leading: Padding(
           padding: const EdgeInsets.fromLTRB(20, 10, 0, 10),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              'assets/branding/padisehat_app_icon.png',
-              key: const Key('padisehat-logo'),
-              fit: BoxFit.cover,
-              excludeFromSemantics: true,
-              cacheWidth: 132,
+          child: FittedBox(
+            child: ClipRect(
+              child: Align(
+                alignment: Alignment.topCenter,
+                // The transparent logo includes a wordmark under the symbol.
+                widthFactor: 0.65,
+                heightFactor: 0.64,
+                child: Image.asset(
+                  'assets/branding/padisehat_logo.png',
+                  key: const Key('padisehat-logo'),
+                  width: 210,
+                  height: 192,
+                  cacheWidth: 210,
+                  excludeFromSemantics: true,
+                ),
+              ),
             ),
           ),
         ),
