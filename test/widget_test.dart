@@ -97,6 +97,8 @@ void main() {
       expect(detail.cause, isNotEmpty);
       expect(detail.management, isNotNull);
       expect(detail.management, isNotEmpty);
+      expect(detail.management, contains('Pemupukan:'));
+      expect(detail.management, contains('uji tanah'));
     }
   });
 

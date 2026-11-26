@@ -212,6 +212,7 @@ class DiseaseAnalysisService {
   List<AnalysisRecommendation> _recommendations(
     ConditionLabel condition,
     DiseaseDetail detail,
+<<<<<<< HEAD
     ChemicalActionLevel? chemicalAction, {
     required double? daysAfterTransplant,
   }) {
@@ -224,6 +225,13 @@ class DiseaseAnalysisService {
         .where((text) => text.isNotEmpty)
         .join('\n\n');
     if (management.isEmpty) return const [];
+=======
+    ChemicalActionLevel? chemicalAction,
+    {required double? daysAfterTransplant}
+  ) {
+    final management = detail.management?.trim();
+    if (management == null || management.isEmpty) return const [];
+>>>>>>> b5964916dfbca4f875866580e6dbe970d46a4ef0
     final canRecommendUrea =
         daysAfterTransplant != null &&
         daysAfterTransplant.isFinite &&
