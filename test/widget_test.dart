@@ -217,6 +217,46 @@ void main() {
     expect(find.text('Belum ada riwayat scan.'), findsOneWidget);
   });
 
+  testWidgets('foto dari kamera dalam aplikasi masuk ke pratinjau', (
+    tester,
+  ) async {
+    final bloc = ScanBloc(
+      _Photos((_) async => null),
+      ScanPhoto(SimulatedPredictionRepository(), const _AllowPhoto()),
+      _History(),
+    );
+    addTearDown(bloc.close);
+    await _openScan(
+      tester,
+      bloc,
+      cameraPage: (context) => Scaffold(
+        appBar: AppBar(title: const Text('Kamera dalam aplikasi')),
+        body: Center(
+          child: FilledButton(
+            onPressed: () => Navigator.of(context).pop<Uint8List>(_photo),
+            child: const Text('Jepret'),
+          ),
+        ),
+      ),
+    );
+    await tester.ensureVisible(find.text('Ambil Foto'));
+    await tester.tap(find.text('Ambil Foto'));
+    await tester.pumpAndSettle();
+    expect(find.text('Kamera dalam aplikasi'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(bloc.state.photo, isNull);
+
+    await tester.ensureVisible(find.text('Ambil Foto'));
+    await tester.tap(find.text('Ambil Foto'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Jepret'));
+    await tester.pumpAndSettle();
+
+    expect(bloc.state.photo, same(_photo));
+    expect(_analyzeButton(tester).onPressed, isNotNull);
+  });
+
   testWidgets('foto yang ditolak tidak diprediksi atau disimpan', (tester) async {
     final history = _History();
     final prediction = _PendingPrediction();
@@ -391,6 +431,7 @@ Future<void> _openScan(
   WidgetTester tester,
   ScanBloc bloc, {
   HistoryRepository? history,
+  WidgetBuilder? cameraPage,
   int confidencePercent = AppSettings.defaultConfidencePercent,
 }) => tester.pumpWidget(
   MaterialApp(
@@ -399,6 +440,7 @@ Future<void> _openScan(
       child: ScanPage(
         details: const LocalDiseaseDetailRepository(),
         history: history ?? _History(),
+        cameraPage: cameraPage,
         confidencePercent: confidencePercent,
       ),
     ),

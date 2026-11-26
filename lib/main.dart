@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' as platform;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -5,6 +6,7 @@ import 'features/history/domain/history_repository.dart';
 import 'features/history/presentation/history_cubit.dart';
 import 'features/history/presentation/history_page.dart';
 import 'features/knowledge/domain/disease_detail_repository.dart';
+import 'features/scan/presentation/camera_scan_page.dart';
 import 'features/scan/presentation/landing_page.dart';
 import 'features/scan/presentation/scan_bloc.dart';
 import 'features/scan/presentation/scan_page.dart';
@@ -60,6 +62,11 @@ class PadiSehatApp extends StatelessWidget {
                       details: getIt<DiseaseDetailRepository>(),
                       history: getIt<HistoryRepository>(),
                       confidencePercent: confidencePercent,
+                      cameraPage: !platform.kIsWeb &&
+                              platform.defaultTargetPlatform ==
+                                  platform.TargetPlatform.android
+                          ? (_) => const CameraScanPage()
+                          : null,
                     ),
                   ),
               LandingPage.historyRoute: (_) => BlocProvider(

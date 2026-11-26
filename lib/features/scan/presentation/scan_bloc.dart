@@ -22,6 +22,12 @@ final class RecoverPickerPhoto extends ScanEvent {
   const RecoverPickerPhoto();
 }
 
+final class CapturedPhoto extends ScanEvent {
+  const CapturedPhoto(this.bytes);
+
+  final Uint8List bytes;
+}
+
 final class AnalyzePhoto extends ScanEvent {
   const AnalyzePhoto();
 }
@@ -54,6 +60,10 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
     : super(const ScanState(ScanStatus.idle)) {
     on<PickPhoto>(_pickPhoto);
     on<RecoverPickerPhoto>(_recoverPhoto);
+    on<CapturedPhoto>((event, emit) {
+      if (state.isBusy) return;
+      emit(ScanState(ScanStatus.ready, photo: event.bytes));
+    });
     on<AnalyzePhoto>(_analyzePhoto);
   }
 

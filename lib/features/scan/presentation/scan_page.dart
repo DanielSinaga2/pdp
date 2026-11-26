@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -17,11 +19,13 @@ class ScanPage extends StatelessWidget {
     super.key,
     required this.details,
     required this.history,
+    this.cameraPage,
     this.confidencePercent = AppSettings.defaultConfidencePercent,
   });
 
   final DiseaseDetailRepository details;
   final HistoryRepository history;
+  final WidgetBuilder? cameraPage;
   final int confidencePercent;
 
   @override
@@ -139,7 +143,7 @@ class ScanPage extends StatelessWidget {
                     OutlinedButton.icon(
                       onPressed: state.isBusy
                           ? null
-                          : () => bloc.add(const PickPhoto(PhotoSource.camera)),
+                          : () => _takePhoto(context, bloc),
                       icon: const Icon(Icons.photo_camera_outlined),
                       label: const Text('Ambil Foto'),
                     ),
@@ -162,5 +166,18 @@ class ScanPage extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _takePhoto(BuildContext context, ScanBloc bloc) async {
+    final builder = cameraPage;
+    if (builder == null) {
+      bloc.add(const PickPhoto(PhotoSource.camera));
+      return;
+    }
+
+    final photo = await Navigator.of(context).push<Uint8List>(
+      MaterialPageRoute<Uint8List>(builder: builder),
+    );
+    if (context.mounted && photo != null) bloc.add(CapturedPhoto(photo));
   }
 }

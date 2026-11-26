@@ -35,23 +35,38 @@ class ScanViewfinder extends StatelessWidget {
               ),
             ),
           Positioned.fill(
-            child: IgnorePointer(
-              child: ExcludeSemantics(
-                child: CustomPaint(
-                  painter: _FramePainter(
-                    image == null ? colors.onSurfaceVariant : Colors.white,
-                  ),
-                ),
-              ),
+            child: ScanOverlay(
+              frameColor: image == null ? colors.onSurfaceVariant : Colors.white,
+              showLine: image != null && isAnalyzing,
             ),
           ),
-          if (image != null && isAnalyzing)
-            const Positioned.fill(
-              child: IgnorePointer(
-                child: ExcludeSemantics(child: _ScanLine()),
-              ),
-            ),
         ],
+      ),
+    );
+  }
+}
+
+class ScanOverlay extends StatelessWidget {
+  const ScanOverlay({
+    super.key,
+    this.frameColor = Colors.white,
+    required this.showLine,
+  });
+
+  final Color frameColor;
+  final bool showLine;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: ExcludeSemantics(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            CustomPaint(painter: _FramePainter(frameColor)),
+            if (showLine) const _ScanLine(),
+          ],
+        ),
       ),
     );
   }
