@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:material_ui/material_ui.dart';
 
 class LandingPage extends StatelessWidget {
@@ -10,67 +11,62 @@ class LandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 64,
-        leadingWidth: 64,
-        leading: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 10, 0, 10),
-          child: FittedBox(
-            child: ClipRect(
-              child: Align(
-                alignment: Alignment.topCenter,
-                // The transparent logo includes a wordmark under the symbol.
-                widthFactor: 0.65,
-                heightFactor: 0.64,
-                child: Image.asset(
-                  'assets/branding/padisehat_logo.png',
-                  key: const Key('padisehat-logo'),
-                  width: 210,
-                  height: 192,
-                  cacheWidth: 210,
-                  excludeFromSemantics: true,
-                ),
-              ),
-            ),
-          ),
-        ),
-        title: const Text(
-          'PadiSehat',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        titleSpacing: 12,
-        backgroundColor: colors.surface,
-        scrolledUnderElevation: 0,
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 580),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-              children: [
-                const _RiceFieldHero(),
-                const SizedBox(height: 26),
-                Text(
-                  'Fitur',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
+    final overlays = theme.brightness == Brightness.dark
+        ? SystemUiOverlayStyle.light
+        : SystemUiOverlayStyle.dark;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlays.copyWith(statusBarColor: Colors.transparent),
+      child: Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 580),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                children: [
+                  Row(
+                    children: [
+                      Image.asset(
+                        'assets/branding/padisehat_symbol.png',
+                        key: const Key('padisehat-logo'),
+                        width: 40,
+                        height: 40,
+                        excludeFromSemantics: true,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'PadiSehat',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 12),
-                const _FeatureCard(
-                  label: 'Scan',
-                  description: 'Ambil foto atau pilih dari galeri',
-                  icon: Icons.document_scanner_outlined,
-                  route: scanRoute,
-                  primary: true,
-                ),
-                const SizedBox(height: 10),
-                const _SecondaryFeatures(),
-              ],
+                  const SizedBox(height: 20),
+                  const _RiceFieldHero(),
+                  const SizedBox(height: 26),
+                  Text(
+                    'Fitur',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const _FeatureCard(
+                    label: 'Scan',
+                    description: 'Ambil foto atau pilih dari galeri',
+                    icon: Icons.document_scanner_outlined,
+                    route: scanRoute,
+                    primary: true,
+                  ),
+                  const SizedBox(height: 10),
+                  const _SecondaryFeatures(),
+                ],
+              ),
             ),
           ),
         ),
@@ -120,6 +116,7 @@ class _RiceFieldHero extends StatelessWidget {
                 padding: const EdgeInsets.all(22),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -163,33 +160,35 @@ class _SecondaryFeatures extends StatelessWidget {
         final stack =
             constraints.maxWidth < 304 ||
             MediaQuery.textScalerOf(context).scale(14) > 18;
-        final width = stack
-            ? constraints.maxWidth
-            : (constraints.maxWidth - gap) / 2;
+        const history = _FeatureCard(
+          label: 'Riwayat',
+          description: 'Lihat hasil scan',
+          icon: Icons.history,
+          route: LandingPage.historyRoute,
+        );
+        const settings = _FeatureCard(
+          label: 'Pengaturan',
+          description: 'Tema dan ambang',
+          icon: Icons.settings_outlined,
+          route: LandingPage.settingsRoute,
+        );
 
-        return Wrap(
-          spacing: gap,
-          runSpacing: gap,
-          children: [
-            SizedBox(
-              width: width,
-              child: const _FeatureCard(
-                label: 'Riwayat',
-                description: 'Lihat hasil scan',
-                icon: Icons.history,
-                route: LandingPage.historyRoute,
-              ),
-            ),
-            SizedBox(
-              width: width,
-              child: const _FeatureCard(
-                label: 'Pengaturan',
-                description: 'Tema dan ambang',
-                icon: Icons.settings_outlined,
-                route: LandingPage.settingsRoute,
-              ),
-            ),
-          ],
+        if (stack) {
+          return const Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [history, SizedBox(height: gap), settings],
+          );
+        }
+
+        return const IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: history),
+              SizedBox(width: gap),
+              Expanded(child: settings),
+            ],
+          ),
         );
       },
     );
