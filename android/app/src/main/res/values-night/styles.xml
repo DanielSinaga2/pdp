@@ -3,7 +3,7 @@
     <color name="launch_surface">#161D19</color>
 
     <style name="BaseLaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
-        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowBackground">@drawable/padisehat_launch_background</item>
         <item name="android:statusBarColor">@color/launch_surface</item>
         <item name="android:navigationBarColor">@color/launch_surface</item>
         <item name="android:windowLightStatusBar">false</item>
