@@ -18,6 +18,20 @@ const _disclaimer =
     'referensi yang tersedia. Hasil AI bukan pengganti pemeriksaan langsung '
     'oleh ahli pertanian atau penyuluh lapangan.';
 
+typedef AiAnalysisInputs = ({
+  Map<String, SymptomAnswer> answers,
+  String severity,
+  String age,
+  String humidity,
+  String temperature,
+  String rainfall,
+});
+
+typedef AiAnalysisDetails = ({
+  AiAnalysisInputs inputs,
+  DiseaseAnalysisResult result,
+});
+
 class AiAnalysisDetailPage extends StatefulWidget {
   const AiAnalysisDetailPage({
     super.key,
@@ -25,6 +39,7 @@ class AiAnalysisDetailPage extends StatefulWidget {
     required this.prediction,
     required this.detail,
     required this.confidencePercent,
+    this.initialInputs,
     this.analysisService,
     this.diseaseDetails,
   });
@@ -33,6 +48,7 @@ class AiAnalysisDetailPage extends StatefulWidget {
   final ScanPrediction prediction;
   final DiseaseDetail detail;
   final int confidencePercent;
+  final AiAnalysisInputs? initialInputs;
   final DiseaseAnalysisService? analysisService;
   final DiseaseDetailRepository? diseaseDetails;
 
@@ -41,13 +57,29 @@ class AiAnalysisDetailPage extends StatefulWidget {
 }
 
 class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
-  final Map<String, SymptomAnswer> _answers = {};
+  late final _answers = Map<String, SymptomAnswer>.of(
+    widget.initialInputs?.answers ?? const {},
+  );
   bool _showAllSymptoms = false;
-  double? _severityPercent;
-  double? _daysAfterTransplant;
-  double? _relativeHumidity;
-  double? _temperature;
-  double? _rainfall;
+  late String _severity = widget.initialInputs?.severity ?? '';
+  late String _age = widget.initialInputs?.age ?? '';
+  late String _humidity = widget.initialInputs?.humidity ?? '';
+  late String _temperature = widget.initialInputs?.temperature ?? '';
+  late String _rainfall = widget.initialInputs?.rainfall ?? '';
+
+  void _returnToResult() {
+    Navigator.of(context).pop<AiAnalysisDetails>((
+      inputs: (
+        answers: Map.unmodifiable(_answers),
+        severity: _severity,
+        age: _age,
+        humidity: _humidity,
+        temperature: _temperature,
+        rainfall: _rainfall,
+      ),
+      result: _analyze(),
+    ));
+  }
 
   DiseaseAnalysisService get _service =>
       widget.analysisService ?? DiseaseAnalysisService.fromNotebookDraft();
@@ -72,11 +104,11 @@ class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
     prediction: widget.prediction,
     observations: _observations,
     fuzzyInputs: FuzzyInputs(
-      severityPercent: _severityPercent,
-      daysAfterTransplant: _daysAfterTransplant,
-      relativeHumidityPercent: _relativeHumidity,
-      temperatureCelsius: _temperature,
-      rainfallLast7DaysMm: _rainfall,
+      severityPercent: double.tryParse(_severity),
+      daysAfterTransplant: double.tryParse(_age),
+      relativeHumidityPercent: double.tryParse(_humidity),
+      temperatureCelsius: double.tryParse(_temperature),
+      rainfallLast7DaysMm: double.tryParse(_rainfall),
     ),
     diseaseDetail: widget.detail,
   );
@@ -107,10 +139,10 @@ class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
     final isHealthy = widget.prediction.label == ConditionLabel.healthy;
     final theme = Theme.of(context);
 
-    return PopScope<DiseaseAnalysisResult>(
+    return PopScope<AiAnalysisDetails>(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Navigator.of(context).pop(analysis);
+        if (!didPop) _returnToResult();
       },
       child: Scaffold(
       backgroundColor: _pageBackground,
@@ -342,23 +374,23 @@ class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
                 _FuzzyInputCard(
                   title: 'Keparahan gejala',
                   help: 'Persentase 0-100%',
-                  value: _severityPercent,
+                  value: _severity,
                   onChanged: (value) =>
-                      setState(() => _severityPercent = value),
+                      setState(() => _severity = value),
                 ),
                 _FuzzyInputCard(
                   title: 'Umur tanaman (HST)',
                   help: 'Hari setelah tanam',
-                  value: _daysAfterTransplant,
+                  value: _age,
                   onChanged: (value) =>
-                      setState(() => _daysAfterTransplant = value),
+                      setState(() => _age = value),
                 ),
                 _FuzzyInputCard(
                   title: 'Kelembapan udara (RH)',
                   help: 'Persentase 0-100%',
-                  value: _relativeHumidity,
+                  value: _humidity,
                   onChanged: (value) =>
-                      setState(() => _relativeHumidity = value),
+                      setState(() => _humidity = value),
                 ),
                 _FuzzyInputCard(
                   title: 'Suhu (°C)',
@@ -429,6 +461,13 @@ class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
                 ],
                 const SizedBox(height: 18),
                 const _Notice(text: _disclaimer),
+                if (Navigator.of(context).canPop()) ...[
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    onPressed: _returnToResult,
+                    child: const Text('Kembali ke Hasil Analisis'),
+                  ),
+                ],
               ],
             ),
           ),
@@ -695,8 +734,8 @@ class _FuzzyInputCard extends StatelessWidget {
 
   final String title;
   final String help;
-  final double? value;
-  final ValueChanged<double?> onChanged;
+  final String value;
+  final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) => Card(
@@ -706,7 +745,7 @@ class _FuzzyInputCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       child: TextFormField(
         key: ValueKey('fuzzy_$title'),
-        initialValue: value?.toString(),
+        initialValue: value,
         keyboardType: const TextInputType.numberWithOptions(
           decimal: true,
           signed: true,
@@ -716,7 +755,7 @@ class _FuzzyInputCard extends StatelessWidget {
           helperText: help,
           border: const OutlineInputBorder(),
         ),
-        onChanged: (text) => onChanged(double.tryParse(text)),
+        onChanged: onChanged,
       ),
     ),
   );

@@ -355,12 +355,43 @@ void main() {
     expect(find.textContaining('Faktor Urea Sugeno: 0.80'), findsOneWidget);
     expect(find.textContaining('Faktor KCl Sugeno: 1.30'), findsOneWidget);
 
-    await tester.pageBack();
+    final backToResult = find.text('Kembali ke Hasil Analisis');
+    await _ensureVisible(tester, backToResult);
+    await tester.tap(backToResult);
     await tester.pumpAndSettle();
+    expect(find.text('Hasil analisis'), findsOneWidget);
     await _ensureVisible(tester, find.text('Input keparahan: 0%'));
     expect(find.text('Input keparahan: 0%'), findsOneWidget);
     expect(find.text('Skor Sugeno: 0.20'), findsOneWidget);
     expect(find.text('Blast'), findsWidgets);
+
+    final openDetail = find.text('Lihat Detail AI & Penanganan');
+    await _ensureVisible(tester, openDetail);
+    await tester.tap(openDetail);
+    await tester.pumpAndSettle();
+
+    final symptom = find.byKey(const ValueKey('symptom_G05'));
+    await _ensureVisible(tester, symptom);
+    expect(
+      find.descendant(
+        of: symptom,
+        matching: find.text('Sangat yakin (1.0)'),
+      ),
+      findsOneWidget,
+    );
+    for (final (label, value) in [
+      ('Keparahan gejala', '0'),
+      ('Umur tanaman (HST)', '0'),
+      ('Kelembapan udara (RH)', '50'),
+    ]) {
+      final field = find.byKey(ValueKey('fuzzy_$label'));
+      await _ensureVisible(tester, field);
+      final input = find.descendant(
+        of: field,
+        matching: find.byType(EditableText),
+      );
+      expect(tester.widget<EditableText>(input).controller.text, value);
+    }
     expect(tester.takeException(), isNull);
   });
 }
