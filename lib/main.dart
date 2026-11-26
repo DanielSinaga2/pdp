@@ -23,7 +23,7 @@ class PadiSehatApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const seed = Color(0xFF367343);
+    const seed = Color(0xFF45634F);
 
     return MultiBlocProvider(
       providers: [
@@ -36,13 +36,15 @@ class PadiSehatApp extends StatelessWidget {
           return MaterialApp(
             title: 'PadiSehat',
             theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: seed),
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: seed,
+              ).copyWith(surface: const Color(0xFFF1F0EA)),
             ),
             darkTheme: ThemeData(
               colorScheme: ColorScheme.fromSeed(
                 seedColor: seed,
                 brightness: Brightness.dark,
-              ),
+              ).copyWith(surface: const Color(0xFF161D19)),
             ),
             themeMode: switch (theme) {
               AppThemePreference.system => ThemeMode.system,

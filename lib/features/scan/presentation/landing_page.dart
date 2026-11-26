@@ -14,119 +14,54 @@ class LandingPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PadiSehat'),
+        toolbarHeight: 64,
+        leadingWidth: 64,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 12, top: 6, bottom: 6),
-          child: Image.asset(
-            'assets/branding/padisehat_logo.png',
-            key: const Key('padisehat-logo'),
-            excludeFromSemantics: true,
+          padding: const EdgeInsets.fromLTRB(20, 10, 0, 10),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.asset(
+              'assets/branding/padisehat_app_icon.png',
+              key: const Key('padisehat-logo'),
+              fit: BoxFit.cover,
+              excludeFromSemantics: true,
+              cacheWidth: 132,
+            ),
           ),
         ),
+        title: const Text(
+          'PadiSehat',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        titleSpacing: 12,
+        backgroundColor: colors.surface,
+        scrolledUnderElevation: 0,
       ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 560),
+            constraints: const BoxConstraints(maxWidth: 580),
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: ColoredBox(
-                    color: colors.primaryContainer,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Kenali kondisi daun padi',
-                                style: theme.textTheme.headlineSmall?.copyWith(
-                                  color: colors.onPrimaryContainer,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Analisis foto langsung di perangkat.',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: colors.onPrimaryContainer,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const ExcludeSemantics(
-                          child: SizedBox(
-                            height: 116,
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                Positioned(
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  height: 44,
-                                  child: CustomPaint(painter: _FieldPainter()),
-                                ),
-                                CustomPaint(painter: _RiceLeafPainter()),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                const _RiceFieldHero(),
+                const SizedBox(height: 26),
+                Text(
+                  'Fitur',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 24),
-                Text('Fitur', style: theme.textTheme.titleLarge),
                 const SizedBox(height: 12),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    const gap = 8.0;
-                    final wideTiles =
-                        MediaQuery.textScalerOf(context).scale(14) > 19 ||
-                        constraints.maxWidth < 258;
-                    final width = wideTiles
-                        ? constraints.maxWidth
-                        : (constraints.maxWidth - 2 * gap) / 3;
-                    return Wrap(
-                      spacing: gap,
-                      runSpacing: gap,
-                      children: [
-                        SizedBox(
-                          width: width,
-                          child: const _FeatureTile(
-                            label: 'Scan',
-                            icon: Icons.camera_alt_outlined,
-                            route: scanRoute,
-                            primary: true,
-                          ),
-                        ),
-                        SizedBox(
-                          width: width,
-                          child: const _FeatureTile(
-                            label: 'Riwayat',
-                            icon: Icons.history,
-                            route: historyRoute,
-                          ),
-                        ),
-                        SizedBox(
-                          width: width,
-                          child: const _FeatureTile(
-                            label: 'Pengaturan',
-                            icon: Icons.settings_outlined,
-                            route: settingsRoute,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+                const _FeatureCard(
+                  label: 'Scan',
+                  description: 'Ambil foto atau pilih dari galeri',
+                  icon: Icons.document_scanner_outlined,
+                  route: scanRoute,
+                  primary: true,
                 ),
+                const SizedBox(height: 10),
+                const _SecondaryFeatures(),
               ],
             ),
           ),
@@ -136,15 +71,134 @@ class LandingPage extends StatelessWidget {
   }
 }
 
-class _FeatureTile extends StatelessWidget {
-  const _FeatureTile({
+class _RiceFieldHero extends StatelessWidget {
+  const _RiceFieldHero();
+
+  @override
+  Widget build(BuildContext context) {
+    final typography = Theme.of(context).textTheme;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: ColoredBox(
+        color: const Color(0xFF1B2E23),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/branding/padisehat_rice_field.webp',
+                fit: BoxFit.cover,
+                alignment: Alignment.centerRight,
+                excludeFromSemantics: true,
+              ),
+            ),
+            const Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(0xF014261E),
+                      Color(0xBB14261E),
+                      Color(0x3314261E),
+                    ],
+                    stops: [0, 0.60, 1],
+                  ),
+                ),
+              ),
+            ),
+            ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 190),
+              child: Padding(
+                padding: const EdgeInsets.all(22),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Kenali kondisi\ndaun padi',
+                      style: typography.headlineMedium?.copyWith(
+                        color: const Color(0xFFF0F2E8),
+                        fontWeight: FontWeight.w700,
+                        height: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 225),
+                      child: Text(
+                        'Analisis foto langsung di perangkat, tanpa internet.',
+                        style: typography.bodyMedium?.copyWith(
+                          color: const Color(0xFFDFE8D9),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SecondaryFeatures extends StatelessWidget {
+  const _SecondaryFeatures();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const gap = 10.0;
+        final stack =
+            constraints.maxWidth < 304 ||
+            MediaQuery.textScalerOf(context).scale(14) > 18;
+        final width = stack
+            ? constraints.maxWidth
+            : (constraints.maxWidth - gap) / 2;
+
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            SizedBox(
+              width: width,
+              child: const _FeatureCard(
+                label: 'Riwayat',
+                description: 'Lihat hasil scan',
+                icon: Icons.history,
+                route: LandingPage.historyRoute,
+              ),
+            ),
+            SizedBox(
+              width: width,
+              child: const _FeatureCard(
+                label: 'Pengaturan',
+                description: 'Tema dan ambang',
+                icon: Icons.settings_outlined,
+                route: LandingPage.settingsRoute,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _FeatureCard extends StatelessWidget {
+  const _FeatureCard({
     required this.label,
+    required this.description,
     required this.icon,
     required this.route,
     this.primary = false,
   });
 
   final String label;
+  final String description;
   final IconData icon;
   final String route;
   final bool primary;
@@ -153,268 +207,72 @@ class _FeatureTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final foreground = primary ? colors.onPrimary : colors.onSurface;
+    final background = primary
+        ? colors.primaryContainer
+        : colors.surfaceContainerLow;
+    final foreground = primary ? colors.onPrimaryContainer : colors.onSurface;
 
     return Card(
       margin: EdgeInsets.zero,
-      color: primary ? colors.primary : colors.surfaceContainerHigh,
+      elevation: 0,
+      color: background,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: primary ? Colors.transparent : colors.outlineVariant,
+        ),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => Navigator.of(context).pushNamed<void>(route),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
-          child: Column(
+          padding: const EdgeInsets.all(14),
+          child: Row(
             children: [
-              Icon(icon, color: foreground),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.labelLarge?.copyWith(color: foreground),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: primary ? colors.primary : colors.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(9),
+                  child: Icon(
+                    icon,
+                    size: 20,
+                    color: primary ? colors.onPrimary : colors.primary,
+                  ),
+                ),
               ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: foreground,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      description,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: primary ? foreground : colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (primary) ...[
+                const SizedBox(width: 8),
+                Icon(Icons.arrow_forward_rounded, color: foreground),
+              ],
             ],
           ),
         ),
       ),
     );
   }
-}
-
-class _RiceLeafPainter extends CustomPainter {
-  const _RiceLeafPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final widthScale = size.width / 400;
-    final heightScale = size.height / 280;
-    final scale = widthScale < heightScale ? widthScale : heightScale;
-    canvas.save();
-    canvas.translate(
-      (size.width - 400 * scale) / 2,
-      (size.height - 280 * scale) / 2,
-    );
-    canvas.scale(scale);
-
-    final haloPaint = Paint()..color = const Color(0xFFEAF4D6);
-    canvas.drawOval(
-      Rect.fromCenter(center: const Offset(188, 198), width: 350, height: 130),
-      haloPaint,
-    );
-
-    _drawLeaf(
-      canvas,
-      const Offset(184, 254),
-      const Offset(52, 94),
-      const Color(0xFF70B82A),
-      const Offset(145, 180),
-    );
-    _drawLeaf(
-      canvas,
-      const Offset(190, 254),
-      const Offset(116, 35),
-      const Color(0xFF8ACB2D),
-      const Offset(154, 153),
-    );
-    _drawLeaf(
-      canvas,
-      const Offset(204, 254),
-      const Offset(248, 20),
-      const Color(0xFF63B32A),
-      const Offset(222, 154),
-    );
-    _drawLeaf(
-      canvas,
-      const Offset(214, 254),
-      const Offset(353, 111),
-      const Color(0xFF82C62A),
-      const Offset(265, 172),
-    );
-    _drawLeaf(
-      canvas,
-      const Offset(184, 254),
-      const Offset(40, 211),
-      const Color(0xFF5CA82B),
-      const Offset(117, 229),
-    );
-    _drawLeaf(
-      canvas,
-      const Offset(201, 254),
-      const Offset(326, 211),
-      const Color(0xFF78B936),
-      const Offset(267, 229),
-    );
-
-    final stalkPaint = Paint()
-      ..color = const Color(0xFF388A2B)
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
-    canvas.drawLine(const Offset(194, 252), const Offset(252, 45), stalkPaint);
-    for (var index = 0; index < 5; index++) {
-      final y = 72.0 + index * 24;
-      final x = 245.0 - index * 9;
-      _drawGrain(canvas, Offset(x, y), 1);
-    }
-
-    final handlePaint = Paint()
-      ..color = const Color(0xFF064B33)
-      ..strokeWidth = 28
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      const Offset(260, 173),
-      const Offset(318, 230),
-      handlePaint,
-    );
-
-    canvas.drawCircle(
-      const Offset(224, 139),
-      72,
-      Paint()..color = const Color(0xFF064B33),
-    );
-    canvas.drawCircle(
-      const Offset(224, 139),
-      59,
-      Paint()..color = const Color(0xFFFAFCF4),
-    );
-    canvas.drawCircle(
-      const Offset(224, 139),
-      51,
-      Paint()..color = const Color(0x5589C83D),
-    );
-    _drawLeaf(
-      canvas,
-      const Offset(209, 178),
-      const Offset(253, 95),
-      const Color(0xFF8FCB35),
-      const Offset(223, 142),
-    );
-    final spotsPaint = Paint()..color = const Color(0xFF9A5A24);
-    for (final spot in const [
-      Offset(218, 145),
-      Offset(229, 132),
-      Offset(225, 153),
-      Offset(239, 124),
-      Offset(236, 145),
-    ]) {
-      canvas.drawOval(
-        Rect.fromCenter(center: spot, width: 5, height: 9),
-        spotsPaint,
-      );
-    }
-    canvas.drawCircle(
-      const Offset(224, 139),
-      54,
-      Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5,
-    );
-
-    final raysPaint = Paint()
-      ..color = const Color(0xFF9ACB39)
-      ..strokeWidth = 7
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(const Offset(307, 74), const Offset(317, 55), raysPaint);
-    canvas.drawLine(const Offset(324, 91), const Offset(344, 80), raysPaint);
-    canvas.drawLine(const Offset(331, 110), const Offset(352, 110), raysPaint);
-    canvas.restore();
-  }
-
-  void _drawLeaf(
-    Canvas canvas,
-    Offset base,
-    Offset tip,
-    Color color,
-    Offset control,
-  ) {
-    final direction = tip - base;
-    final perpendicular = Offset(-direction.dy * 0.13, direction.dx * 0.13);
-    final path = Path()
-      ..moveTo(base.dx, base.dy)
-      ..quadraticBezierTo(
-        control.dx - perpendicular.dx,
-        control.dy - perpendicular.dy,
-        tip.dx,
-        tip.dy,
-      )
-      ..quadraticBezierTo(
-        control.dx + perpendicular.dx,
-        control.dy + perpendicular.dy,
-        base.dx,
-        base.dy,
-      )
-      ..close();
-    canvas.drawPath(path, Paint()..color = color);
-    canvas.drawLine(
-      base,
-      tip,
-      Paint()
-        ..color = const Color(0x55366F26)
-        ..strokeWidth = 2,
-    );
-  }
-
-  void _drawGrain(Canvas canvas, Offset center, double scale) {
-    final paint = Paint()..color = const Color(0xFFE9B923);
-    canvas.save();
-    canvas.translate(center.dx, center.dy);
-    canvas.rotate(-0.65);
-    for (var index = 0; index < 3; index++) {
-      canvas.drawOval(
-        Rect.fromCenter(
-          center: Offset(index * 9 * scale, index * 11 * scale),
-          width: 11 * scale,
-          height: 21 * scale,
-        ),
-        paint,
-      );
-    }
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant _RiceLeafPainter oldDelegate) => false;
-}
-
-class _FieldPainter extends CustomPainter {
-  const _FieldPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final height = size.height;
-    final width = size.width;
-    final back = Path()
-      ..moveTo(0, height * 0.42)
-      ..quadraticBezierTo(
-        width * 0.25,
-        height * 0.02,
-        width * 0.53,
-        height * 0.48,
-      )
-      ..quadraticBezierTo(width * 0.8, height * 0.9, width, height * 0.28)
-      ..lineTo(width, height)
-      ..lineTo(0, height)
-      ..close();
-    canvas.drawPath(back, Paint()..color = const Color(0xFFD8EFA6));
-
-    final front = Path()
-      ..moveTo(0, height * 0.65)
-      ..quadraticBezierTo(
-        width * 0.35,
-        height * 0.34,
-        width * 0.67,
-        height * 0.72,
-      )
-      ..quadraticBezierTo(width * 0.85, height * 0.9, width, height * 0.62)
-      ..lineTo(width, height)
-      ..lineTo(0, height)
-      ..close();
-    canvas.drawPath(front, Paint()..color = const Color(0xFF9CCB4B));
-    canvas.drawRect(
-      Rect.fromLTWH(0, height * 0.85, width, height * 0.15),
-      Paint()..color = const Color(0xFF78B83B),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _FieldPainter oldDelegate) => false;
 }
