@@ -117,11 +117,13 @@ class GlassSurface extends StatelessWidget {
     required this.child,
     this.padding = EdgeInsets.zero,
     this.radius = 20,
+    this.tint,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
   final double radius;
+  final Color? tint;
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +146,7 @@ class GlassSurface extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: glassColor(colors),
+              color: tint ?? glassColor(colors),
               borderRadius: corners,
               border: Border.all(color: glassBorder(colors)),
             ),

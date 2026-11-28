@@ -54,40 +54,7 @@ class LandingPage extends StatelessWidget {
                   const SizedBox(height: 20),
                   const _RiceFieldHero(),
                   const SizedBox(height: 26),
-                  Text(
-                    'Mengenal teknologi kami',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const _ModelCard(),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Yang bisa Anda lakukan',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const GlassSurface(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    child: Column(
-                      children: [
-                        _CapabilityRow(
-                          icon: Icons.photo_camera_outlined,
-                          title: 'Scan daun padi',
-                          description: 'Foto dari kamera atau galeri',
-                        ),
-                        Divider(height: 1),
-                        _CapabilityRow(
-                          icon: Icons.history_outlined,
-                          title: 'Pantau riwayat',
-                          description: 'Simpan dan buka kembali hasil scan',
-                        ),
-                      ],
-                    ),
-                  ),
+                  const _TechnologyOverview(),
                 ],
               ),
             ),
@@ -172,59 +139,130 @@ class _RiceFieldHero extends StatelessWidget {
   }
 }
 
-class _ModelCard extends StatelessWidget {
-  const _ModelCard();
+class _TechnologyOverview extends StatelessWidget {
+  const _TechnologyOverview();
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return GlassSurface(
-      padding: const EdgeInsets.all(18),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: colors.primary,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(11),
-              child: Icon(Icons.memory_rounded, color: colors.onPrimary),
-            ),
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Dari notebook ke aplikasi',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'EfficientNetB0 + TensorFlow Lite',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  'Model klasifikasi citra menganalisis foto langsung di perangkat. Data foto tidak perlu dikirim ke internet.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Mengenali 5 kondisi daun padi',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: colors.primary,
-                  ),
-                ),
-              ],
-            ),
+        ),
+        const SizedBox(height: 12),
+        const GlassSurface(
+          padding: EdgeInsets.all(18),
+          child: _CapabilityRow(
+            icon: Icons.science_outlined,
+            title: 'Riset Paddy Doctor',
+            description:
+                'Notebook tim membandingkan model berbasis foto dengan model '
+                'multimodal yang memakai foto, umur tanaman, dan varietas. '
+                'PadiSehat memakai model berbasis foto agar scan bisa dimulai '
+                'dari kamera atau galeri.',
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 10),
+        GlassSurface(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _CapabilityRow(
+                icon: Icons.memory_outlined,
+                title: 'EfficientNetB0 + TensorFlow Lite',
+                description:
+                    'Flutter menyiapkan foto RGB berukuran 224 × 224 piksel. '
+                    'Model membaca pola pada daun dan menghitung skor untuk '
+                    'setiap kelas langsung di HP, bahkan tanpa internet.',
+              ),
+              const Divider(height: 24),
+              Text(
+                'Kondisi yang ditampilkan',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Wrap(
+                spacing: 6,
+                runSpacing: 2,
+                children: [
+                  Chip(label: Text('Hawar daun bakteri')),
+                  Chip(label: Text('Blast')),
+                  Chip(label: Text('Bercak coklat')),
+                  Chip(label: Text('Tungro')),
+                  Chip(label: Text('Sehat')),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Cara membaca hasil',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 12),
+        const GlassSurface(
+          padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+          child: Column(
+            children: [
+              _CapabilityRow(
+                icon: Icons.photo_camera_outlined,
+                title: 'Periksa hasil scan',
+                description:
+                    'Hasil menampilkan dugaan kondisi dan confidence model. '
+                    'Kalau keyakinannya rendah, coba foto ulang dengan daun '
+                    'terlihat jelas dan cahaya merata.',
+              ),
+              Divider(height: 16),
+              _CapabilityRow(
+                icon: Icons.fact_check_outlined,
+                title: 'Tinjau gejala dengan Certainty Factor',
+                description:
+                    'Di Detail AI, jawaban tentang gejala memberi bukti '
+                    'tambahan. Skor bukti dihitung terpisah dari prediksi foto.',
+              ),
+              Divider(height: 16),
+              _CapabilityRow(
+                icon: Icons.tune_outlined,
+                title: 'Lihat panduan Fuzzy Sugeno',
+                description:
+                    'Keparahan, umur tanaman, kelembapan, dan dukungan '
+                    'gejala membantu menentukan tindak lanjut ketika '
+                    'datanya cukup.',
+              ),
+              Divider(height: 16),
+              _CapabilityRow(
+                icon: Icons.history_outlined,
+                title: 'Buka kembali di Riwayat',
+                description:
+                    'Foto dan hasil scan yang tersimpan dapat dibuka kembali '
+                    'di perangkat tanpa koneksi internet.',
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Gunakan hasil sebagai petunjuk awal. Konfirmasi gejala di lapangan '
+          'dengan penyuluh sebelum menentukan penanganan.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colors.onSurfaceVariant,
+            height: 1.5,
+          ),
+        ),
+      ],
     );
   }
 }

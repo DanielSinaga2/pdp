@@ -169,71 +169,98 @@ class _IntroSlide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+    final typography = Theme.of(context).textTheme;
 
     return LayoutBuilder(
       builder: (context, constraints) => ListView(
         padding: const EdgeInsets.fromLTRB(22, 8, 22, 12),
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: SizedBox(
-              height: (constraints.maxHeight * .54)
-                  .clamp(132.0, 310.0)
-                  .toDouble(),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.asset(
+            borderRadius: BorderRadius.circular(26),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Image.asset(
                     image,
                     fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
                     excludeFromSemantics: true,
                   ),
-                  Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: GlassSurface(
-                        radius: 16,
-                        padding: const EdgeInsets.all(10),
-                        child: Icon(icon, color: colors.primary),
+                ),
+                const Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0x0015291D),
+                          Color(0x1A15291D),
+                          Color(0x9915291D),
+                        ],
+                        stops: [0, .36, 1],
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-          GlassSurface(
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  eyebrow,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: colors.primary,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                  ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  title,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    color: colors.onSurface,
-                    fontWeight: FontWeight.w800,
-                    height: 1.15,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  description,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    height: 1.45,
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(
+                        height: (constraints.maxHeight * .40)
+                            .clamp(110.0, 260.0)
+                            .toDouble(),
+                      ),
+                      GlassSurface(
+                        radius: 20,
+                        tint: const Color(0xB31B3022),
+                        padding: const EdgeInsets.all(17),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  icon,
+                                  size: 20,
+                                  color: const Color(0xFFD2E6C7),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    eyebrow,
+                                    style: typography.labelLarge?.copyWith(
+                                      color: const Color(0xFFD2E6C7),
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 9),
+                            Text(
+                              title,
+                              style: typography.headlineSmall?.copyWith(
+                                color: const Color(0xFFF4F8F0),
+                                fontWeight: FontWeight.w800,
+                                height: 1.15,
+                              ),
+                            ),
+                            const SizedBox(height: 9),
+                            Text(
+                              description,
+                              style: typography.bodyMedium?.copyWith(
+                                color: const Color(0xFFE5EFE3),
+                                height: 1.45,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
