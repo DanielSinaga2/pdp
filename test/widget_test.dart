@@ -6,6 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pdp/features/history/domain/history_repository.dart';
+import 'package:pdp/features/history/presentation/history_cubit.dart';
+import 'package:pdp/features/history/presentation/history_page.dart';
 import 'package:pdp/features/knowledge/data/local_disease_detail_repository.dart';
 import 'package:pdp/features/knowledge/domain/condition_label.dart';
 import 'package:pdp/features/knowledge/domain/disease_detail_repository.dart';
@@ -14,6 +16,7 @@ import 'package:pdp/features/scan/domain/photo_repository.dart';
 import 'package:pdp/features/scan/domain/prediction_repository.dart';
 import 'package:pdp/features/scan/domain/rice_photo_screening.dart';
 import 'package:pdp/features/scan/domain/scan_photo.dart';
+import 'package:pdp/features/scan/presentation/landing_page.dart';
 import 'package:pdp/features/scan/presentation/scan_bloc.dart';
 import 'package:pdp/features/scan/presentation/scan_page.dart';
 import 'package:pdp/features/scan/presentation/scan_result_page.dart';
@@ -28,10 +31,11 @@ final _photo = base64Decode(
 
 void main() {
   const details = LocalDiseaseDetailRepository();
-  const warning = 'Hasil kurang meyakinkan. Coba ambil foto ulang '
+  const warning =
+      'Hasil kurang meyakinkan. Coba ambil foto ulang '
       'dengan pencahayaan yang lebih baik.';
 
-  testWidgets('aplikasi dibuka di Beranda dan Scan membuka halaman kamera', (
+  testWidgets('pengenalan berlanjut ke beranda dengan empat menu', (
     tester,
   ) async {
     final history = _History();
@@ -50,30 +54,36 @@ void main() {
     await tester.pumpWidget(const PadiSehatApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('Fitur'), findsOneWidget);
+    expect(find.text('Lewati'), findsOneWidget);
+    expect(find.text('Lanjut'), findsOneWidget);
+    expect(find.byType(LandingPage), findsNothing);
+    await tester.tap(find.text('Lanjut'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Ambil foto,'), findsOneWidget);
+    await tester.tap(find.text('Lanjut'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Masuk ke Beranda'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LandingPage), findsOneWidget);
+    expect(find.text('Beranda'), findsOneWidget);
     expect(find.text('Scan'), findsOneWidget);
     expect(find.text('Riwayat'), findsOneWidget);
     expect(find.text('Pengaturan'), findsOneWidget);
     expect(find.byType(ScanPage), findsNothing);
-    expect(find.text('Ambil Foto'), findsNothing);
 
     await tester.tap(find.text('Scan'));
     await tester.pumpAndSettle();
     expect(find.byType(ScanPage), findsOneWidget);
-    expect(find.text('Scan daun padi'), findsOneWidget);
-    expect(find.text('Pilih Foto dari Galeri'), findsOneWidget);
     expect(find.text('Ambil Foto'), findsOneWidget);
 
-    await tester.pageBack();
+    await tester.tap(find.text('Beranda'));
     await tester.pumpAndSettle();
-    expect(find.text('Fitur'), findsOneWidget);
-    expect(find.byType(ScanPage), findsNothing);
+    expect(find.byType(LandingPage), findsOneWidget);
 
     await tester.tap(find.text('Riwayat'));
     await tester.pumpAndSettle();
     expect(find.text('Belum ada riwayat scan.'), findsOneWidget);
-    await tester.pageBack();
-    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Pengaturan'));
     await tester.pumpAndSettle();
@@ -81,30 +91,39 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  test('lima label memiliki materi lokal yang lengkap dan ditandai untuk ditinjau', () {
-    expect(ConditionLabel.values.map((label) => label.code).toSet(), {
-      'bacterial_leaf_blight', 'blast', 'brown_spot', 'tungro', 'healthy',
-    });
-    expect(
-      ConditionLabel.values.map((label) => details.getDetail(label).name),
-      ['Hawar daun bakteri', 'Blast', 'Bercak coklat', 'Tungro', 'Sehat'],
-    );
-    for (final label in ConditionLabel.values) {
-      final detail = details.getDetail(label);
-      expect(detail.needsReview, isTrue);
-      expect(detail.symptoms, isNotNull);
-      expect(detail.symptoms, isNotEmpty);
-      expect(detail.cause, isNotNull);
-      expect(detail.cause, isNotEmpty);
-      expect(detail.management, isNotNull);
-      expect(detail.management, isNotEmpty);
-      expect(detail.management, contains('Pemupukan:'));
-      expect(detail.management, contains('uji tanah'));
-    }
-  });
+  test(
+    'lima label memiliki materi lokal yang lengkap dan ditandai untuk ditinjau',
+    () {
+      expect(ConditionLabel.values.map((label) => label.code).toSet(), {
+        'bacterial_leaf_blight',
+        'blast',
+        'brown_spot',
+        'tungro',
+        'healthy',
+      });
+      expect(
+        ConditionLabel.values.map((label) => details.getDetail(label).name),
+        ['Hawar daun bakteri', 'Blast', 'Bercak coklat', 'Tungro', 'Sehat'],
+      );
+      for (final label in ConditionLabel.values) {
+        final detail = details.getDetail(label);
+        expect(detail.needsReview, isTrue);
+        expect(detail.symptoms, isNotNull);
+        expect(detail.symptoms, isNotEmpty);
+        expect(detail.cause, isNotNull);
+        expect(detail.cause, isNotEmpty);
+        expect(detail.management, isNotNull);
+        expect(detail.management, isNotEmpty);
+        expect(detail.management, contains('Pemupukan:'));
+        expect(detail.management, contains('uji tanah'));
+      }
+    },
+  );
 
   for (final confidence in [0.74, 0.75]) {
-    testWidgets('peringatan hasil untuk confidence $confidence', (tester) async {
+    testWidgets('peringatan hasil untuk confidence $confidence', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: ScanResultPage(
@@ -121,9 +140,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Sehat'), findsOneWidget);
       expect(find.text('Hasil simulasi'), findsOneWidget);
-      expect(find.text(warning), confidence < 0.75 ? findsOneWidget : findsNothing);
+      expect(
+        find.text(warning),
+        confidence < 0.75 ? findsOneWidget : findsNothing,
+      );
       await tester.scrollUntilVisible(find.text('Perawatan'), 100);
-      expect(find.text('Materi masih perlu ditinjau oleh tim.'), findsOneWidget);
+      expect(
+        find.text('Materi masih perlu ditinjau oleh tim.'),
+        findsOneWidget,
+      );
       expect(find.text('Penanganan'), findsNothing);
     });
   }
@@ -183,7 +208,7 @@ void main() {
     expect(bloc.state.photo, same(replacement));
     expect(find.text('Hasil simulasi'), findsNothing);
 
-    await tester.tap(find.byTooltip('Riwayat Scan'));
+    await tester.tap(find.text('Riwayat'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Semua kondisi'));
     await tester.pumpAndSettle();
@@ -257,7 +282,9 @@ void main() {
     expect(_analyzeButton(tester).onPressed, isNotNull);
   });
 
-  testWidgets('foto yang ditolak tidak diprediksi atau disimpan', (tester) async {
+  testWidgets('foto yang ditolak tidak diprediksi atau disimpan', (
+    tester,
+  ) async {
     final history = _History();
     final prediction = _PendingPrediction();
     final bloc = ScanBloc(
@@ -274,7 +301,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Foto belum bisa dianalisis. Pilih foto daun padi yang terlihat jelas.'),
+      find.text(
+        'Foto belum bisa dianalisis. Pilih foto daun padi yang terlihat jelas.',
+      ),
       findsOneWidget,
     );
     expect(find.text('Ganti Foto'), findsOneWidget);
@@ -282,7 +311,9 @@ void main() {
     expect(history.entries, isEmpty);
   });
 
-  testWidgets('hasil tetap tampil jika riwayat gagal tersimpan', (tester) async {
+  testWidgets('hasil tetap tampil jika riwayat gagal tersimpan', (
+    tester,
+  ) async {
     final bloc = ScanBloc(
       _Photos((_) async => _photo),
       ScanPhoto(SimulatedPredictionRepository(), const _AllowPhoto()),
@@ -324,12 +355,17 @@ void main() {
     await tester.tap(find.text('Ganti Foto'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Foto tidak dapat dibaca. Coba pilih foto lain.'), findsOneWidget);
+    expect(
+      find.text('Foto tidak dapat dibaca. Coba pilih foto lain.'),
+      findsOneWidget,
+    );
     expect(bloc.state.photo, same(_photo));
     expect(_analyzeButton(tester).onPressed, isNotNull);
   });
 
-  testWidgets('kamera batal atau gagal, lalu bisa memilih foto', (tester) async {
+  testWidgets('kamera batal atau gagal, lalu bisa memilih foto', (
+    tester,
+  ) async {
     var cameraCalls = 0;
     final bloc = ScanBloc(
       _Photos((source) async {
@@ -351,10 +387,12 @@ void main() {
     await tester.tap(find.text('Pilih Foto dari Galeri'));
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('Ambil Foto'));
     await tester.tap(find.text('Ambil Foto'));
     await tester.pumpAndSettle();
     expect(bloc.state.photo, same(_photo));
 
+    await tester.ensureVisible(find.text('Ambil Foto'));
     await tester.tap(find.text('Ambil Foto'));
     await tester.pumpAndSettle();
     expect(
@@ -363,6 +401,7 @@ void main() {
     );
     expect(bloc.state.photo, same(_photo));
 
+    await tester.ensureVisible(find.text('Ambil Foto'));
     await tester.tap(find.text('Ambil Foto'));
     await tester.pumpAndSettle();
     expect(bloc.state.status, ScanStatus.ready);
@@ -370,7 +409,9 @@ void main() {
     expect(_analyzeButton(tester).onPressed, isNotNull);
   });
 
-  testWidgets('foto dari picker Android dipulihkan ke pratinjau', (tester) async {
+  testWidgets('foto dari picker Android dipulihkan ke pratinjau', (
+    tester,
+  ) async {
     final recovered = Completer<Uint8List?>();
     final bloc = ScanBloc(
       _Photos((_) async => null, recover: () => recovered.future),
@@ -433,19 +474,33 @@ Future<void> _openScan(
   HistoryRepository? history,
   WidgetBuilder? cameraPage,
   int confidencePercent = AppSettings.defaultConfidencePercent,
-}) => tester.pumpWidget(
-  MaterialApp(
-    home: BlocProvider.value(
-      value: bloc,
-      child: ScanPage(
-        details: const LocalDiseaseDetailRepository(),
-        history: history ?? _History(),
-        cameraPage: cameraPage,
-        confidencePercent: confidencePercent,
+}) {
+  final repository = history ?? _History();
+  const details = LocalDiseaseDetailRepository();
+  return tester.pumpWidget(
+    MaterialApp(
+      home: BlocProvider.value(
+        value: bloc,
+        child: ScanPage(
+          details: details,
+          history: repository,
+          cameraPage: cameraPage,
+          confidencePercent: confidencePercent,
+        ),
       ),
+      routes: {
+        LandingPage.historyRoute: (_) => BlocProvider(
+          create: (_) => HistoryCubit(repository)..load(),
+          child: HistoryPage(
+            details: details,
+            repository: repository,
+            confidencePercent: confidencePercent,
+          ),
+        ),
+      },
     ),
-  ),
-);
+  );
+}
 
 FilledButton _analyzeButton(WidgetTester tester) =>
     tester.allWidgets.whereType<FilledButton>().single;
@@ -489,13 +544,15 @@ class _History implements HistoryRepository {
     required Uint8List photo,
   }) async {
     if (failSave) throw Exception('Storage unavailable');
-    entries.add(HistoryEntry(
-      id: entries.length + 1,
-      label: label,
-      confidence: confidence,
-      scannedAt: scannedAt,
-      isSimulated: isSimulated,
-    ));
+    entries.add(
+      HistoryEntry(
+        id: entries.length + 1,
+        label: label,
+        confidence: confidence,
+        scannedAt: scannedAt,
+        isSimulated: isSimulated,
+      ),
+    );
   }
 
   @override
@@ -510,7 +567,6 @@ class _History implements HistoryRepository {
   @override
   Future<Uint8List?> readPhoto(int id) async => null;
 }
-
 
 class _DefaultSettings implements SettingsRepository {
   @override

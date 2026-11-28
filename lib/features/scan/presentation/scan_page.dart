@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../presentation/padi_style.dart';
 import '../../history/domain/history_repository.dart';
 import '../../knowledge/domain/disease_detail_repository.dart';
 import '../../settings/domain/settings_repository.dart';
@@ -73,13 +74,20 @@ class ScanPage extends StatelessWidget {
                       style: theme.textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Ambil foto daun padi atau pilih foto dari galeri.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
                     ),
-                    const SizedBox(height: 24),
-                    ScanViewfinder(
-                      photo: photo,
-                      isAnalyzing: state.status == ScanStatus.analyzing,
+                    const SizedBox(height: 20),
+                    GlassSurface(
+                      radius: 24,
+                      padding: const EdgeInsets.all(5),
+                      child: ScanViewfinder(
+                        photo: photo,
+                        isAnalyzing: state.status == ScanStatus.analyzing,
+                      ),
                     ),
                     const SizedBox(height: 20),
                     if (state.errorMessage case final message?)
@@ -149,8 +157,9 @@ class ScanPage extends StatelessWidget {
       return;
     }
 
-    final photo = await Navigator.of(context)
-        .push<Uint8List>(MaterialPageRoute<Uint8List>(builder: builder));
+    final photo = await Navigator.of(
+      context,
+    ).push<Uint8List>(MaterialPageRoute<Uint8List>(builder: builder));
     if (context.mounted && photo != null) bloc.add(CapturedPhoto(photo));
   }
 }

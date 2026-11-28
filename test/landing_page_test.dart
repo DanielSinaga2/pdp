@@ -21,7 +21,7 @@ void main() {
     );
 
     expect(find.byKey(const Key('padisehat-logo')), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('Scan'), 100);
+    expect(find.text('Beranda'), findsOneWidget);
     expect(find.text('Riwayat'), findsOneWidget);
     expect(find.text('Pengaturan'), findsOneWidget);
     await tester.tap(find.text('Scan'));

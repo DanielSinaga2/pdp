@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../domain/settings_repository.dart';
+import '../../../presentation/padi_style.dart';
 import '../../scan/presentation/app_navigation.dart';
 import 'settings_cubit.dart';
 
@@ -51,31 +52,47 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                       const SizedBox(height: 16),
                     ],
-                    Text(
-                      'Ambang tingkat keyakinan',
-                      style: theme.textTheme.titleLarge,
-                    ),
-                    Text('$percent%'),
-                    Slider(
-                      value: percent.toDouble(),
-                      max: 100,
-                      divisions: 100,
-                      label: '$percent%',
-                      semanticFormatterCallback: (value) => '${value.round()}%',
-                      onChanged: state.canEdit
-                          ? (value) =>
-                                setState(() => _draftPercent = value.round())
-                          : null,
-                      onChangeEnd: state.canEdit
-                          ? (value) {
-                              setState(() => _draftPercent = null);
-                              cubit.setConfidencePercent(value.round());
-                            }
-                          : null,
-                    ),
-                    const Text(
-                      'Hasil di bawah ambang ini menampilkan saran '
-                      'untuk mengambil foto ulang.',
+                    GlassSurface(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Ambang tingkat keyakinan',
+                            style: theme.textTheme.titleLarge,
+                          ),
+                          Text(
+                            '$percent%',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Slider(
+                            value: percent.toDouble(),
+                            max: 100,
+                            divisions: 100,
+                            label: '$percent%',
+                            semanticFormatterCallback: (value) =>
+                                '${value.round()}%',
+                            onChanged: state.canEdit
+                                ? (value) => setState(
+                                    () => _draftPercent = value.round(),
+                                  )
+                                : null,
+                            onChangeEnd: state.canEdit
+                                ? (value) {
+                                    setState(() => _draftPercent = null);
+                                    cubit.setConfidencePercent(value.round());
+                                  }
+                                : null,
+                          ),
+                          const Text(
+                            'Hasil di bawah ambang ini menampilkan saran '
+                            'untuk mengambil foto ulang.',
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 24),
                     InputDecorator(

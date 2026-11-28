@@ -34,145 +34,157 @@ class HistoryPage extends StatelessWidget {
           ),
           appBar: AppBar(title: const Text('Riwayat Scan')),
           body: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: InputDecorator(
-                    decoration: const InputDecoration(
-                      labelText: 'Filter kondisi',
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: state.filter?.code ?? '',
-                        items: [
-                          const DropdownMenuItem(
-                            value: '',
-                            child: Text('Semua kondisi'),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 660),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Filter kondisi',
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: state.filter?.code ?? '',
+                            items: [
+                              const DropdownMenuItem(
+                                value: '',
+                                child: Text('Semua kondisi'),
+                              ),
+                              for (final label in ConditionLabel.values)
+                                DropdownMenuItem(
+                                  value: label.code,
+                                  child: Text(details.getDetail(label).name),
+                                ),
+                            ],
+                            onChanged: state.busy
+                                ? null
+                                : (code) {
+                                    final label = code == null || code.isEmpty
+                                        ? null
+                                        : ConditionLabel.values.firstWhere(
+                                            (label) => label.code == code,
+                                          );
+                                    cubit.load(filter: label);
+                                  },
                           ),
-                          for (final label in ConditionLabel.values)
-                            DropdownMenuItem(
-                              value: label.code,
-                              child: Text(details.getDetail(label).name),
-                            ),
-                        ],
-                        onChanged: state.busy
-                            ? null
-                            : (code) {
-                                final label = code == null || code.isEmpty
-                                    ? null
-                                    : ConditionLabel.values.firstWhere(
-                                        (label) => label.code == code,
-                                      );
-                                cubit.load(filter: label);
-                              },
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                if (state.busy) const LinearProgressIndicator(),
-                if (state.error case final error?)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        Text(
-                          error,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () => cubit.load(filter: state.filter),
-                          child: const Text('Coba lagi'),
-                        ),
-                      ],
-                    ),
-                  ),
-                Expanded(
-                  child: state.entries.isEmpty
-                      ? Center(
-                          child: state.busy || state.error != null
-                              ? null
-                              : Text(
-                                  state.filter == null
-                                      ? 'Belum ada riwayat scan.'
-                                      : 'Belum ada scan untuk kondisi ini.',
-                                ),
-                        )
-                      : ListView.builder(
-                          itemCount: state.entries.length,
-                          itemBuilder: (context, index) {
-                            final entry = state.entries[index];
-                            final detail = details.getDetail(entry.label);
-                            final timestamp = _formatDate(
-                              context,
-                              entry.scannedAt,
-                            );
-                            return ListTile(
-                              title: Text(detail.name),
-                              subtitle: Text(
-                                entry.isSimulated
-                                    ? '$timestamp · Hasil simulasi'
-                                    : timestamp,
+                    if (state.busy) const LinearProgressIndicator(),
+                    if (state.error case final error?)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          children: [
+                            Text(
+                              error,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
                               ),
-                              onTap: state.busy
+                            ),
+                            TextButton(
+                              onPressed: () => cubit.load(filter: state.filter),
+                              child: const Text('Coba lagi'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Expanded(
+                      child: state.entries.isEmpty
+                          ? Center(
+                              child: state.busy || state.error != null
                                   ? null
-                                  : () {
-                                      final photo = repository.readPhoto(
-                                        entry.id,
-                                      );
-                                      Navigator.of(context).push<void>(
-                                        MaterialPageRoute<void>(
-                                          builder: (_) => FutureBuilder<Uint8List?>(
-                                            future: photo,
-                                            builder: (context, snapshot) {
-                                              if (snapshot.connectionState !=
-                                                  ConnectionState.done) {
-                                                return const Scaffold(
-                                                  body: Center(
-                                                    child:
-                                                        CircularProgressIndicator(),
-                                                  ),
-                                                );
-                                              }
-                                              return ScanResultPage(
-                                                photo: snapshot.data,
-                                                prediction: ScanPrediction(
-                                                  label: entry.label,
-                                                  confidence: entry.confidence,
-                                                  isSimulated:
-                                                      entry.isSimulated,
+                                  : Text(
+                                      state.filter == null
+                                          ? 'Belum ada riwayat scan.'
+                                          : 'Belum ada scan untuk kondisi ini.',
+                                    ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                              itemCount: state.entries.length,
+                              itemBuilder: (context, index) {
+                                final entry = state.entries[index];
+                                final detail = details.getDetail(entry.label);
+                                final timestamp = _formatDate(
+                                  context,
+                                  entry.scannedAt,
+                                );
+                                return Card(
+                                  clipBehavior: Clip.antiAlias,
+                                  child: ListTile(
+                                    title: Text(detail.name),
+                                    subtitle: Text(
+                                      entry.isSimulated
+                                          ? '$timestamp · Hasil simulasi'
+                                          : timestamp,
+                                    ),
+                                    onTap: state.busy
+                                        ? null
+                                        : () {
+                                            final photo = repository.readPhoto(
+                                              entry.id,
+                                            );
+                                            Navigator.of(context).push<void>(
+                                              MaterialPageRoute<void>(
+                                                builder: (_) => FutureBuilder<Uint8List?>(
+                                                  future: photo,
+                                                  builder: (context, snapshot) {
+                                                    if (snapshot
+                                                            .connectionState !=
+                                                        ConnectionState.done) {
+                                                      return const Scaffold(
+                                                        body: Center(
+                                                          child:
+                                                              CircularProgressIndicator(),
+                                                        ),
+                                                      );
+                                                    }
+                                                    return ScanResultPage(
+                                                      photo: snapshot.data,
+                                                      prediction:
+                                                          ScanPrediction(
+                                                            label: entry.label,
+                                                            confidence: entry
+                                                                .confidence,
+                                                            isSimulated: entry
+                                                                .isSimulated,
+                                                          ),
+                                                      detail: detail,
+                                                      scannedAtLabel: timestamp,
+                                                      confidencePercent:
+                                                          confidencePercent,
+                                                      diseaseDetails: details,
+                                                    );
+                                                  },
                                                 ),
-                                                detail: detail,
-                                                scannedAtLabel: timestamp,
-                                                confidencePercent:
-                                                    confidencePercent,
-                                                diseaseDetails: details,
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      );
-                                    },
-                              trailing: IconButton(
-                                tooltip: 'Hapus catatan',
-                                onPressed: state.busy
-                                    ? null
-                                    : () => _confirmDelete(
-                                        context,
-                                        cubit,
-                                        entry.id,
-                                      ),
-                                icon: const Icon(Icons.delete_outline),
-                              ),
-                            );
-                          },
-                        ),
+                                              ),
+                                            );
+                                          },
+                                    trailing: IconButton(
+                                      tooltip: 'Hapus catatan',
+                                      onPressed: state.busy
+                                          ? null
+                                          : () => _confirmDelete(
+                                              context,
+                                              cubit,
+                                              entry.id,
+                                            ),
+                                      icon: const Icon(Icons.delete_outline),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );

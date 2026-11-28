@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../presentation/padi_style.dart';
 import 'landing_page.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -20,21 +21,23 @@ class _OnboardingPageState extends State<OnboardingPage> {
       title: 'Daun padi sehat,\npanen lebih dekat.',
       description:
           'Teman praktis untuk mengenali kondisi daun padi langsung dari foto.',
-      color: Color(0xFF2F6B45),
+      image: 'assets/branding/padisehat_rice_field.webp',
     ),
     _IntroSlide(
       icon: Icons.document_scanner_rounded,
       eyebrow: 'SCAN CERDAS',
       title: 'Ambil foto,\ndapatkan petunjuk.',
-      description: 'Pilih foto dari galeri atau gunakan kamera untuk menganalisis kondisi daun.',
-      color: Color(0xFF497F59),
+      description:
+          'Pilih foto dari galeri atau gunakan kamera untuk menganalisis kondisi daun.',
+      image: 'assets/branding/padisehat_intro_scan.webp',
     ),
     _IntroSlide(
       icon: Icons.memory_rounded,
       eyebrow: 'AI DI PERANGKAT',
       title: 'Cepat, privat,\ndan siap di lapangan.',
-      description: 'Model TensorFlow Lite bekerja langsung di perangkat Anda, bahkan tanpa internet.',
-      color: Color(0xFF215C4A),
+      description:
+          'Model TensorFlow Lite bekerja langsung di perangkat Anda, bahkan tanpa internet.',
+      image: 'assets/branding/padisehat_intro_offline.webp',
     ),
   ];
 
@@ -49,63 +52,97 @@ class _OnboardingPageState extends State<OnboardingPage> {
     final isLast = _page == _slides.length - 1;
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: _enterHome,
-                child: const Text('Lewati'),
-              ),
-            ),
-            Expanded(
-              child: PageView.builder(
-                controller: _controller,
-                itemCount: _slides.length,
-                onPageChanged: (page) => setState(() => _page = page),
-                itemBuilder: (context, index) => _slides[index],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(28, 8, 28, 28),
-              child: Row(
-                children: [
-                  Row(
-                    children: List.generate(
-                      _slides.length,
-                      (index) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 220),
-                        margin: const EdgeInsets.only(right: 6),
-                        width: index == _page ? 26 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: index == _page
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.outlineVariant,
-                          borderRadius: BorderRadius.circular(8),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(22, 8, 22, 4),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        'assets/branding/padisehat_symbol.png',
+                        width: 36,
+                        height: 36,
+                        excludeFromSemantics: true,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'PadiSehat',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                       ),
-                    ),
+                      TextButton(
+                        onPressed: _enterHome,
+                        child: const Text('Lewati'),
+                      ),
+                    ],
                   ),
-                  const Spacer(),
-                  FilledButton.icon(
-                    onPressed: isLast
-                        ? _enterHome
-                        : () => _controller.nextPage(
-                            duration: const Duration(milliseconds: 320),
-                            curve: Curves.easeOutCubic,
+                ),
+                Expanded(
+                  child: PageView.builder(
+                    controller: _controller,
+                    itemCount: _slides.length,
+                    onPageChanged: (page) => setState(() => _page = page),
+                    itemBuilder: (context, index) => _slides[index],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(22, 6, 22, 16),
+                  child: GlassSurface(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    child: OverflowBar(
+                      alignment: MainAxisAlignment.spaceBetween,
+                      spacing: 12,
+                      overflowSpacing: 8,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(
+                            _slides.length,
+                            (index) => AnimatedContainer(
+                              duration: const Duration(milliseconds: 220),
+                              margin: const EdgeInsets.only(right: 6),
+                              width: index == _page ? 22 : 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                color: index == _page
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.outlineVariant,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                           ),
-                    icon: Icon(
-                      isLast
-                          ? Icons.arrow_forward_rounded
-                          : Icons.navigate_next_rounded,
+                        ),
+                        FilledButton.icon(
+                          onPressed: isLast
+                              ? _enterHome
+                              : () => _controller.nextPage(
+                                  duration: const Duration(milliseconds: 320),
+                                  curve: Curves.easeOutCubic,
+                                ),
+                          icon: Icon(
+                            isLast
+                                ? Icons.arrow_forward_rounded
+                                : Icons.navigate_next_rounded,
+                          ),
+                          label: Text(isLast ? 'Masuk ke Beranda' : 'Lanjut'),
+                        ),
+                      ],
                     ),
-                    label: Text(isLast ? 'Masuk ke Beranda' : 'Lanjut'),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -121,68 +158,87 @@ class _IntroSlide extends StatelessWidget {
     required this.eyebrow,
     required this.title,
     required this.description,
-    required this.color,
+    required this.image,
   });
 
   final IconData icon;
   final String eyebrow;
   final String title;
   final String description;
-  final Color color;
+  final String image;
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return LayoutBuilder(
+      builder: (context, constraints) => ListView(
+        padding: const EdgeInsets.fromLTRB(22, 8, 22, 12),
         children: [
-          const Spacer(),
-          Center(
-            child: Container(
-              width: 220,
-              height: 220,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(62),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: .25),
-                    blurRadius: 36,
-                    offset: const Offset(0, 18),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: SizedBox(
+              height: (constraints.maxHeight * .54)
+                  .clamp(132.0, 310.0)
+                  .toDouble(),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    image,
+                    fit: BoxFit.cover,
+                    excludeFromSemantics: true,
+                  ),
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: GlassSurface(
+                        radius: 16,
+                        padding: const EdgeInsets.all(10),
+                        child: Icon(icon, color: colors.primary),
+                      ),
+                    ),
                   ),
                 ],
               ),
-              child: Icon(icon, size: 96, color: const Color(0xFFF3F7EE)),
-            ),
-          ),
-          const Spacer(),
-          Text(
-            eyebrow,
-            style: text.labelLarge?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: text.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              height: 1.1,
             ),
           ),
           const SizedBox(height: 14),
-          Text(
-            description,
-            style: text.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              height: 1.5,
+          GlassSurface(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  eyebrow,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: colors.primary,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  title,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.w800,
+                    height: 1.15,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  description,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    height: 1.45,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 24),
         ],
       ),
     );

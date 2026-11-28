@@ -9,10 +9,6 @@ import '../domain/disease_analysis.dart';
 import '../domain/fuzzy_logic.dart';
 import '../domain/prediction_repository.dart';
 
-const _primaryGreen = Color(0xFF146B2E);
-const _darkGreen = Color(0xFF064E2B);
-const _lightGreen = Color(0xFFEAF5DF);
-const _pageBackground = Color(0xFFFAFCF5);
 const _disclaimer =
     'Informasi ini merupakan panduan awal berdasarkan hasil analisis dan '
     'referensi yang tersedia. Hasil AI bukan pengganti pemeriksaan langsung '
@@ -113,182 +109,159 @@ class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
         if (!didPop) Navigator.of(context).pop(analysis);
       },
       child: Scaffold(
-      backgroundColor: _pageBackground,
-      appBar: AppBar(
-        title: const Text('Detail AI & Penanganan'),
-        backgroundColor: _pageBackground,
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 680),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-              children: [
-                _SectionHeading(
-                  icon: Icons.memory_outlined,
-                  title: 'Model AI / CNN',
-                ),
-                _InfoCard(
-                  children: [
-                    Text(
-                      'PaddySehat Image Classification Model',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: _darkGreen,
-                        fontWeight: FontWeight.w700,
+        appBar: AppBar(title: const Text('Detail AI & Penanganan')),
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 680),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+                children: [
+                  _SectionHeading(
+                    icon: Icons.memory_outlined,
+                    title: 'Model AI / CNN',
+                  ),
+                  _InfoCard(
+                    children: [
+                      Text(
+                        'PaddySehat Image Classification Model',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Model mengklasifikasikan citra daun padi menggunakan '
-                      'TensorFlow Lite. Inferensi dilakukan langsung di '
-                      'perangkat pengguna.',
-                    ),
-                    const SizedBox(height: 14),
-                    const _LabelValue(
-                      label: 'Framework',
-                      value: 'TensorFlow Lite',
-                    ),
-                    const _LabelValue(
-                      label: 'Arsitektur',
-                      value:
-                          'Notebook menggunakan EfficientNetB0 sebagai '
-                          'default (MobileNetV2 tersedia sebagai opsi). '
-                          'Model aplikasi mengikuti metadata berkas model.',
-                    ),
-                    const _LabelValue(
-                      label: 'Metode',
-                      value: 'Klasifikasi citra daun padi',
-                    ),
-                    const _LabelValue(label: 'Input', value: 'Foto daun padi'),
-                    const _LabelValue(
-                      label: 'Output',
-                      value: 'Klasifikasi kondisi atau penyakit daun padi',
-                    ),
-                    const _LabelValue(
-                      label: 'Inferensi',
-                      value: 'On-device inference',
-                    ),
-                    _LabelValue(
-                      label: 'Status model',
-                      value: widget.prediction.isSimulated
-                          ? 'Simulasi'
-                          : 'Model asli (TensorFlow Lite)',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 22),
-                _SectionHeading(
-                  icon: Icons.center_focus_strong_outlined,
-                  title: 'Tahap 1 — Hasil CNN',
-                ),
-                _InfoCard(
-                  children: [
-                    if (widget.photo case final image?) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: Image.memory(
-                          image,
-                          height: 190,
-                          width: double.infinity,
-                          fit: BoxFit.contain,
-                          semanticLabel: 'Foto daun padi yang dianalisis',
-                          errorBuilder: (_, _, _) => const SizedBox(
-                            height: 100,
-                            child: Center(
-                              child: Text('Foto tidak dapat dibaca.'),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Model mengklasifikasikan citra daun padi menggunakan '
+                        'TensorFlow Lite. Inferensi dilakukan langsung di '
+                        'perangkat pengguna.',
+                      ),
+                      const SizedBox(height: 14),
+                      const _LabelValue(
+                        label: 'Framework',
+                        value: 'TensorFlow Lite',
+                      ),
+                      const _LabelValue(
+                        label: 'Arsitektur',
+                        value:
+                            'Notebook menggunakan EfficientNetB0 sebagai '
+                            'default (MobileNetV2 tersedia sebagai opsi). '
+                            'Model aplikasi mengikuti metadata berkas model.',
+                      ),
+                      const _LabelValue(
+                        label: 'Metode',
+                        value: 'Klasifikasi citra daun padi',
+                      ),
+                      const _LabelValue(
+                        label: 'Input',
+                        value: 'Foto daun padi',
+                      ),
+                      const _LabelValue(
+                        label: 'Output',
+                        value: 'Klasifikasi kondisi atau penyakit daun padi',
+                      ),
+                      const _LabelValue(
+                        label: 'Inferensi',
+                        value: 'On-device inference',
+                      ),
+                      _LabelValue(
+                        label: 'Status model',
+                        value: widget.prediction.isSimulated
+                            ? 'Simulasi'
+                            : 'Model asli (TensorFlow Lite)',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 22),
+                  _SectionHeading(
+                    icon: Icons.center_focus_strong_outlined,
+                    title: 'Tahap 1 — Hasil CNN',
+                  ),
+                  _InfoCard(
+                    children: [
+                      if (widget.photo case final image?) ...[
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: Image.memory(
+                            image,
+                            height: 190,
+                            width: double.infinity,
+                            fit: BoxFit.contain,
+                            semanticLabel: 'Foto daun padi yang dianalisis',
+                            errorBuilder: (_, _, _) => const SizedBox(
+                              height: 100,
+                              child: Center(
+                                child: Text('Foto tidak dapat dibaca.'),
+                              ),
                             ),
                           ),
                         ),
+                        const SizedBox(height: 14),
+                      ] else
+                        const Text('Salinan foto tidak tersedia.'),
+                      Text(
+                        widget.detail.name,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                      const SizedBox(height: 14),
-                    ] else
-                      const Text('Salinan foto tidak tersedia.'),
-                    Text(
-                      widget.detail.name,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: _darkGreen,
-                        fontWeight: FontWeight.w700,
+                      const SizedBox(height: 8),
+                      _LabelValue(
+                        label: 'Probabilitas keluaran CNN',
+                        value: _formatPercent(widget.prediction.confidence),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    _LabelValue(
-                      label: 'Probabilitas keluaran CNN',
-                      value: _formatPercent(widget.prediction.confidence),
-                    ),
-                    const Text(
-                      'Nilai ini adalah probabilitas model untuk label terpilih, '
-                      'bukan nilai Certainty Factor.',
-                    ),
-                    if (lowConfidence) ...[
-                      const SizedBox(height: 12),
-                      _Notice(
-                        text:
-                            'Confidence CNN di bawah '
-                            '${widget.confidencePercent}%. Identifikasi belum '
-                            'meyakinkan. Rekomendasi berdasarkan label prediksi '
-                            'bersifat awal; ambil foto ulang dengan pencahayaan '
-                            'lebih baik atau konsultasikan kepada penyuluh.',
-                        warning: true,
+                      const Text(
+                        'Nilai ini adalah probabilitas model untuk label terpilih, '
+                        'bukan nilai Certainty Factor.',
                       ),
+                      if (lowConfidence) ...[
+                        const SizedBox(height: 12),
+                        _Notice(
+                          text:
+                              'Confidence CNN di bawah '
+                              '${widget.confidencePercent}%. Identifikasi belum '
+                              'meyakinkan. Rekomendasi berdasarkan label prediksi '
+                              'bersifat awal; ambil foto ulang dengan pencahayaan '
+                              'lebih baik atau konsultasikan kepada penyuluh.',
+                          warning: true,
+                        ),
+                      ],
+                      if (analysis.conflictsWithPrediction) ...[
+                        const SizedBox(height: 12),
+                        _Notice(
+                          text:
+                              'Bukti gejala memberi dukungan CF lebih tinggi '
+                              'pada ${_conditionName(analysis.diagnosisCandidate)} '
+                              'daripada label CNN ${widget.detail.name}. Hasil '
+                              'tidak disamakan otomatis; verifikasi gejala atau '
+                              'lakukan pemeriksaan ulang.',
+                          warning: true,
+                        ),
+                      ],
                     ],
-                    if (analysis.conflictsWithPrediction) ...[
-                      const SizedBox(height: 12),
-                      _Notice(
-                        text:
-                            'Bukti gejala memberi dukungan CF lebih tinggi '
-                            'pada ${_conditionName(analysis.diagnosisCandidate)} '
-                            'daripada label CNN ${widget.detail.name}. Hasil '
-                            'tidak disamakan otomatis; verifikasi gejala atau '
-                            'lakukan pemeriksaan ulang.',
-                        warning: true,
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 22),
-                _SectionHeading(
-                  icon: Icons.fact_check_outlined,
-                  title: 'Tahap 2 — Konfirmasi Gejala',
-                ),
-                const Text(
-                  'Pertanyaan utama dipilih dari penyakit hasil CNN, disertai '
-                  'gejala pembeda. Pertanyaan kosong berarti belum diketahui; '
-                  'jawaban Tidak bernilai 0.',
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Terjawab: $answeredVisibleQuestions dari '
-                  '${visibleQuestions.length} pertanyaan yang ditampilkan',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: _darkGreen,
-                    fontWeight: FontWeight.w700,
                   ),
-                ),
-                const SizedBox(height: 10),
-                for (final question in adaptiveQuestions.primary)
-                  _SymptomQuestionCard(
-                    question: question,
-                    confidence: _answers[question.symptomId],
-                    onChanged: (value) =>
-                        setState(() {
-                          if (value == null) {
-                            _answers.remove(question.symptomId);
-                          } else {
-                            _answers[question.symptomId] = value;
-                          }
-                        }),
+                  const SizedBox(height: 22),
+                  _SectionHeading(
+                    icon: Icons.fact_check_outlined,
+                    title: 'Tahap 2 — Konfirmasi Gejala',
                   ),
-                if (adaptiveQuestions.differential.isNotEmpty) ...[
+                  const Text(
+                    'Pertanyaan utama dipilih dari penyakit hasil CNN, disertai '
+                    'gejala pembeda. Pertanyaan kosong berarti belum diketahui; '
+                    'jawaban Tidak bernilai 0.',
+                  ),
                   const SizedBox(height: 8),
                   Text(
-                    'Gejala pembeda',
+                    'Terjawab: $answeredVisibleQuestions dari '
+                    '${visibleQuestions.length} pertanyaan yang ditampilkan',
                     style: theme.textTheme.titleSmall?.copyWith(
-                      color: _darkGreen,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  for (final question in adaptiveQuestions.differential)
+                  const SizedBox(height: 10),
+                  for (final question in adaptiveQuestions.primary)
                     _SymptomQuestionCard(
                       question: question,
                       confidence: _answers[question.symptomId],
@@ -300,140 +273,161 @@ class _AiAnalysisDetailPageState extends State<AiAnalysisDetailPage> {
                         }
                       }),
                     ),
-                ],
-                if (additionalQuestions.isNotEmpty)
-                  Card(
-                    color: Colors.white,
-                    child: ExpansionTile(
-                      title: Text(
-                        _showAllSymptoms
-                            ? 'Sembunyikan gejala tambahan'
-                            : 'Lihat gejala tambahan '
-                                  '(${additionalQuestions.length})',
+                  if (adaptiveQuestions.differential.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Gejala pembeda',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w700,
                       ),
-                      onExpansionChanged: (expanded) =>
-                          setState(() => _showAllSymptoms = expanded),
-                      children: [
-                        for (final question in additionalQuestions)
-                          _SymptomQuestionCard(
-                            question: question,
-                            confidence: _answers[question.symptomId],
-                            onChanged: (value) => setState(() {
-                              if (value == null) {
-                                _answers.remove(question.symptomId);
-                              } else {
-                                _answers[question.symptomId] = value;
-                              }
-                            }),
-                          ),
-                      ],
+                    ),
+                    for (final question in adaptiveQuestions.differential)
+                      _SymptomQuestionCard(
+                        question: question,
+                        confidence: _answers[question.symptomId],
+                        onChanged: (value) => setState(() {
+                          if (value == null) {
+                            _answers.remove(question.symptomId);
+                          } else {
+                            _answers[question.symptomId] = value;
+                          }
+                        }),
+                      ),
+                  ],
+                  if (additionalQuestions.isNotEmpty)
+                    Card(
+                      child: ExpansionTile(
+                        title: Text(
+                          _showAllSymptoms
+                              ? 'Sembunyikan gejala tambahan'
+                              : 'Lihat gejala tambahan '
+                                    '(${additionalQuestions.length})',
+                        ),
+                        onExpansionChanged: (expanded) =>
+                            setState(() => _showAllSymptoms = expanded),
+                        children: [
+                          for (final question in additionalQuestions)
+                            _SymptomQuestionCard(
+                              question: question,
+                              confidence: _answers[question.symptomId],
+                              onChanged: (value) => setState(() {
+                                if (value == null) {
+                                  _answers.remove(question.symptomId);
+                                } else {
+                                  _answers[question.symptomId] = value;
+                                }
+                              }),
+                            ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 22),
+                  _SectionHeading(
+                    icon: Icons.cloud_outlined,
+                    title: 'Tahap 3 — Kondisi Lingkungan',
+                  ),
+                  const Text(
+                    'Masukkan data pengamatan aktual. Derajat keanggotaan E01–E06 '
+                    'dihitung otomatis; aplikasi tidak mengambil data dari API '
+                    'cuaca.',
+                  ),
+                  _FuzzyInputCard(
+                    title: 'Keparahan gejala',
+                    help: 'Persentase 0-100%',
+                    value: _severityPercent,
+                    onChanged: (value) =>
+                        setState(() => _severityPercent = value),
+                  ),
+                  _FuzzyInputCard(
+                    title: 'Umur tanaman (HST)',
+                    help: 'Hari setelah tanam',
+                    value: _daysAfterTransplant,
+                    onChanged: (value) =>
+                        setState(() => _daysAfterTransplant = value),
+                  ),
+                  _FuzzyInputCard(
+                    title: 'Kelembapan udara (RH)',
+                    help: 'Persentase 0-100%',
+                    value: _relativeHumidity,
+                    onChanged: (value) =>
+                        setState(() => _relativeHumidity = value),
+                  ),
+                  _FuzzyInputCard(
+                    title: 'Suhu (°C)',
+                    help: 'Digunakan untuk evidence lingkungan CF',
+                    value: _temperature,
+                    onChanged: (value) => setState(() => _temperature = value),
+                  ),
+                  _FuzzyInputCard(
+                    title: 'Curah hujan 7 hari (mm)',
+                    help: 'Digunakan untuk evidence lingkungan CF',
+                    value: _rainfall,
+                    onChanged: (value) => setState(() => _rainfall = value),
+                  ),
+                  _Notice(
+                    text: analysis.environmentalEvidenceStatus,
+                    warning: !analysis.environmentalEvidenceStatus.startsWith(
+                      'Evidence lingkungan dihitung',
                     ),
                   ),
-                const SizedBox(height: 22),
-                _SectionHeading(
-                  icon: Icons.cloud_outlined,
-                  title: 'Tahap 3 — Kondisi Lingkungan',
-                ),
-                const Text(
-                  'Masukkan data pengamatan aktual. Derajat keanggotaan E01–E06 '
-                  'dihitung otomatis; aplikasi tidak mengambil data dari API '
-                  'cuaca.',
-                ),
-                _FuzzyInputCard(
-                  title: 'Keparahan gejala',
-                  help: 'Persentase 0-100%',
-                  value: _severityPercent,
-                  onChanged: (value) =>
-                      setState(() => _severityPercent = value),
-                ),
-                _FuzzyInputCard(
-                  title: 'Umur tanaman (HST)',
-                  help: 'Hari setelah tanam',
-                  value: _daysAfterTransplant,
-                  onChanged: (value) =>
-                      setState(() => _daysAfterTransplant = value),
-                ),
-                _FuzzyInputCard(
-                  title: 'Kelembapan udara (RH)',
-                  help: 'Persentase 0-100%',
-                  value: _relativeHumidity,
-                  onChanged: (value) =>
-                      setState(() => _relativeHumidity = value),
-                ),
-                _FuzzyInputCard(
-                  title: 'Suhu (°C)',
-                  help: 'Digunakan untuk evidence lingkungan CF',
-                  value: _temperature,
-                  onChanged: (value) => setState(() => _temperature = value),
-                ),
-                _FuzzyInputCard(
-                  title: 'Curah hujan 7 hari (mm)',
-                  help: 'Digunakan untuk evidence lingkungan CF',
-                  value: _rainfall,
-                  onChanged: (value) => setState(() => _rainfall = value),
-                ),
-                _Notice(
-                  text: analysis.environmentalEvidenceStatus,
-                  warning: !analysis.environmentalEvidenceStatus.startsWith(
-                    'Evidence lingkungan dihitung',
+                  const SizedBox(height: 22),
+                  _SectionHeading(
+                    icon: Icons.calculate_outlined,
+                    title: 'Tahap 4 — Hasil Diagnosis',
                   ),
-                ),
-                const SizedBox(height: 22),
-                _SectionHeading(
-                  icon: Icons.calculate_outlined,
-                  title: 'Tahap 4 — Hasil Diagnosis',
-                ),
-                _CertaintyCard(
-                  result: analysis.certaintyResult,
-                  allResults: analysis.certaintyResults,
-                  observations: _observations,
-                  hasPartialAnswers: _answers.isNotEmpty,
-                  diagnosisCertain: analysis.diagnosisCertain,
-                  diagnosisCandidate: analysis.diagnosisCandidate,
-                ),
-                const SizedBox(height: 22),
-                _SectionHeading(
-                  icon: Icons.tune_outlined,
-                  title: 'Fuzzy Sugeno',
-                ),
-                const Text(
-                  'Notebook memakai keparahan gejala, HST, dan RH untuk '
-                  'menghitung faktor Urea, faktor KCl, dan skor pengendalian '
-                  'kimia. Ini bukan dosis dan bukan diagnosis mandiri.',
-                ),
-                const SizedBox(height: 10),
-                _FuzzyResultCard(
-                  result: analysis.fuzzyResult,
-                  actionLevel: analysis.chemicalActionLevel,
-                  severityPercent: analysis.severityInputPercent,
-                ),
-                const SizedBox(height: 22),
-                _SectionHeading(
-                  icon: isHealthy
-                      ? Icons.eco_outlined
-                      : Icons.health_and_safety_outlined,
-                  title: isHealthy ? 'Perawatan Tanaman' : 'Rekomendasi',
-                ),
-                for (final recommendation in analysis.recommendations)
-                  _RecommendationCard(recommendation: recommendation),
-                if (analysis.recommendations.isEmpty)
-                  const _Notice(
-                    text: 'Rekomendasi belum tersedia pada referensi aplikasi.',
+                  _CertaintyCard(
+                    result: analysis.certaintyResult,
+                    allResults: analysis.certaintyResults,
+                    observations: _observations,
+                    hasPartialAnswers: _answers.isNotEmpty,
+                    diagnosisCertain: analysis.diagnosisCertain,
+                    diagnosisCandidate: analysis.diagnosisCandidate,
                   ),
-                if (widget.detail.needsReview) ...[
-                  const SizedBox(height: 8),
-                  const _Notice(
-                    text:
-                        'Materi penanganan ini masih memerlukan tinjauan ahli.',
+                  const SizedBox(height: 22),
+                  _SectionHeading(
+                    icon: Icons.tune_outlined,
+                    title: 'Fuzzy Sugeno',
                   ),
+                  const Text(
+                    'Notebook memakai keparahan gejala, HST, dan RH untuk '
+                    'menghitung faktor Urea, faktor KCl, dan skor pengendalian '
+                    'kimia. Ini bukan dosis dan bukan diagnosis mandiri.',
+                  ),
+                  const SizedBox(height: 10),
+                  _FuzzyResultCard(
+                    result: analysis.fuzzyResult,
+                    actionLevel: analysis.chemicalActionLevel,
+                    severityPercent: analysis.severityInputPercent,
+                  ),
+                  const SizedBox(height: 22),
+                  _SectionHeading(
+                    icon: isHealthy
+                        ? Icons.eco_outlined
+                        : Icons.health_and_safety_outlined,
+                    title: isHealthy ? 'Perawatan Tanaman' : 'Rekomendasi',
+                  ),
+                  for (final recommendation in analysis.recommendations)
+                    _RecommendationCard(recommendation: recommendation),
+                  if (analysis.recommendations.isEmpty)
+                    const _Notice(
+                      text:
+                          'Rekomendasi belum tersedia pada referensi aplikasi.',
+                    ),
+                  if (widget.detail.needsReview) ...[
+                    const SizedBox(height: 8),
+                    const _Notice(
+                      text:
+                          'Materi penanganan ini masih memerlukan tinjauan ahli.',
+                    ),
+                  ],
+                  const SizedBox(height: 18),
+                  const _Notice(text: _disclaimer),
                 ],
-                const SizedBox(height: 18),
-                const _Notice(text: _disclaimer),
-              ],
+              ),
             ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -450,13 +444,15 @@ class _SectionHeading extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 10),
     child: Row(
       children: [
-        Icon(icon, color: _primaryGreen),
+        Icon(icon, color: Theme.of(context).colorScheme.primary),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
             title,
-            style: Theme.of(context).textTheme.titleLarge
-                ?.copyWith(color: _darkGreen, fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -471,7 +467,6 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    color: Colors.white,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     child: Padding(
       padding: const EdgeInsets.all(18),
@@ -497,8 +492,10 @@ class _LabelValue extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.labelMedium
-              ?.copyWith(color: _primaryGreen, fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         const SizedBox(height: 2),
         Text(value),
@@ -515,7 +512,9 @@ class _Notice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    color: warning ? const Color(0xFFFFF3D6) : _lightGreen,
+    color: warning
+        ? Theme.of(context).colorScheme.errorContainer
+        : Theme.of(context).colorScheme.primaryContainer,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     child: Padding(
       padding: const EdgeInsets.all(14),
@@ -524,10 +523,21 @@ class _Notice extends StatelessWidget {
         children: [
           Icon(
             warning ? Icons.warning_amber_rounded : Icons.info_outline,
-            color: warning ? const Color(0xFF805900) : _primaryGreen,
+            color: warning
+                ? Theme.of(context).colorScheme.onErrorContainer
+                : Theme.of(context).colorScheme.onPrimaryContainer,
           ),
           const SizedBox(width: 10),
-          Expanded(child: Text(text)),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: warning
+                    ? Theme.of(context).colorScheme.onErrorContainer
+                    : Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
+            ),
+          ),
         ],
       ),
     ),
@@ -547,7 +557,6 @@ class _SymptomQuestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    color: Colors.white,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
     child: Padding(
       padding: const EdgeInsets.all(14),
@@ -700,7 +709,6 @@ class _FuzzyInputCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    color: Colors.white,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     child: Padding(
       padding: const EdgeInsets.all(14),
@@ -742,7 +750,8 @@ class _FuzzyResultCard extends StatelessWidget {
           if (!result.configurationValidated) ...[
             const SizedBox(height: 8),
             const _Notice(
-              text: 'Aturan dan rentang berasal dari notebook, tetapi tetap '
+              text:
+                  'Aturan dan rentang berasal dari notebook, tetapi tetap '
                   'memerlukan validasi ahli pertanian sebelum penggunaan '
                   'sebagai keputusan budidaya.',
             ),
@@ -753,12 +762,8 @@ class _FuzzyResultCard extends StatelessWidget {
 
     return _InfoCard(
       children: [
-        Text(
-          'Input keparahan: ${severityPercent?.toStringAsFixed(0) ?? '-'}%',
-        ),
-        Text(
-          'Faktor Urea Sugeno: ${result.ureaFactor!.toStringAsFixed(2)}',
-        ),
+        Text('Input keparahan: ${severityPercent?.toStringAsFixed(0) ?? '-'}%'),
+        Text('Faktor Urea Sugeno: ${result.ureaFactor!.toStringAsFixed(2)}'),
         Text(
           'Faktor Urea setelah aturan fase notebook: '
           '${result.ureaFactorAfterGrowthStage!.toStringAsFixed(2)}',
@@ -805,7 +810,8 @@ class _FuzzyResultCard extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         const _Notice(
-          text: 'Nilai di atas adalah faktor dan skor sistem, bukan dosis '
+          text:
+              'Nilai di atas adalah faktor dan skor sistem, bukan dosis '
               'pupuk/pestisida. Ikuti referensi penanganan aplikasi dan '
               'konsultasikan dengan penyuluh.',
           warning: true,
@@ -823,7 +829,6 @@ class _RecommendationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Card(
     margin: const EdgeInsets.only(bottom: 10),
-    color: Colors.white,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
     child: Padding(
       padding: const EdgeInsets.all(16),
@@ -832,14 +837,17 @@ class _RecommendationCard extends StatelessWidget {
         children: [
           Text(
             recommendation.category,
-            style: Theme.of(context).textTheme.titleMedium
-                ?.copyWith(color: _darkGreen, fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 8),
           Text(recommendation.content),
           const SizedBox(height: 10),
           const _Notice(
-            text: 'Dosis bersifat indikatif dan perlu disesuaikan dengan '
+            text:
+                'Dosis bersifat indikatif dan perlu disesuaikan dengan '
                 'kondisi lahan, hasil uji tanah, serta rekomendasi penyuluh '
                 'atau ahli pertanian.',
             warning: true,

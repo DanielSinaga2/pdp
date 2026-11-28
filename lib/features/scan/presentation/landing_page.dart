@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:material_ui/material_ui.dart';
 
+import '../../../presentation/padi_style.dart';
 import 'app_navigation.dart';
 
 class LandingPage extends StatelessWidget {
@@ -69,15 +70,23 @@ class LandingPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const _CapabilityRow(
-                    icon: Icons.photo_camera_outlined,
-                    title: 'Scan daun padi',
-                    description: 'Foto dari kamera atau galeri',
-                  ),
-                  const _CapabilityRow(
-                    icon: Icons.history_outlined,
-                    title: 'Pantau riwayat',
-                    description: 'Simpan dan buka kembali hasil scan',
+                  const GlassSurface(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: Column(
+                      children: [
+                        _CapabilityRow(
+                          icon: Icons.photo_camera_outlined,
+                          title: 'Scan daun padi',
+                          description: 'Foto dari kamera atau galeri',
+                        ),
+                        Divider(height: 1),
+                        _CapabilityRow(
+                          icon: Icons.history_outlined,
+                          title: 'Pantau riwayat',
+                          description: 'Simpan dan buka kembali hasil scan',
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -169,12 +178,8 @@ class _ModelCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return Container(
+    return GlassSurface(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: colors.primaryContainer,
-        borderRadius: BorderRadius.circular(20),
-      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -195,14 +200,17 @@ class _ModelCard extends StatelessWidget {
               children: [
                 Text(
                   'EfficientNetB0 + TensorFlow Lite',
-                  style: Theme.of(context).textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w800),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 5),
                 Text(
                   'Model klasifikasi citra menganalisis foto langsung di perangkat. Data foto tidak perlu dikirim ke internet.',
-                  style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: colors.onPrimaryContainer, height: 1.4),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(

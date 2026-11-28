@@ -15,6 +15,7 @@ import 'features/settings/domain/settings_repository.dart';
 import 'features/settings/presentation/settings_cubit.dart';
 import 'features/settings/presentation/settings_page.dart';
 import 'injection.dart';
+import 'presentation/padi_style.dart';
 
 void main() {
   configureDependencies();
@@ -26,8 +27,6 @@ class PadiSehatApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const seed = Color(0xFF45634F);
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => getIt<SettingsCubit>()),
@@ -38,16 +37,10 @@ class PadiSehatApp extends StatelessWidget {
         builder: (context, theme) {
           return MaterialApp(
             title: 'PadiSehat',
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: seed)
-                  .copyWith(surface: const Color(0xFFF1F0EA)),
-            ),
-            darkTheme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: seed,
-                brightness: Brightness.dark,
-              ).copyWith(surface: const Color(0xFF161D19)),
-            ),
+            theme: padiTheme(Brightness.light),
+            darkTheme: padiTheme(Brightness.dark),
+            builder: (context, child) =>
+                PadiBackdrop(child: child ?? const SizedBox.shrink()),
             themeMode: switch (theme) {
               AppThemePreference.system => ThemeMode.system,
               AppThemePreference.light => ThemeMode.light,

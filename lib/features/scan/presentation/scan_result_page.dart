@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../knowledge/domain/condition_label.dart';
 import '../../knowledge/domain/disease_detail_repository.dart';
 import '../../settings/domain/settings_repository.dart';
+import '../../../presentation/padi_style.dart';
 import '../domain/disease_analysis.dart';
 import '../domain/fuzzy_logic.dart';
 import '../domain/prediction_repository.dart';
@@ -73,7 +74,7 @@ class ScanResultPage extends StatelessWidget {
                         ),
                       ),
                     const SizedBox(height: 24),
-                    Card(
+                    GlassSurface(
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: Column(
@@ -168,7 +169,7 @@ class ScanResultPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Card(
-                      color: const Color(0xFFEAF5DF),
+                      color: theme.colorScheme.primaryContainer,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -196,9 +197,9 @@ class ScanResultPage extends StatelessWidget {
                           padding: const EdgeInsets.all(18),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.info_outline,
-                                color: Color(0xFF146B2E),
+                                color: theme.colorScheme.onPrimaryContainer,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -209,7 +210,9 @@ class ScanResultPage extends StatelessWidget {
                                       'Lihat Detail AI & Penanganan',
                                       style: theme.textTheme.titleSmall
                                           ?.copyWith(
-                                            color: const Color(0xFF064E2B),
+                                            color: theme
+                                                .colorScheme
+                                                .onPrimaryContainer,
                                             fontWeight: FontWeight.w700,
                                           ),
                                     ),
@@ -219,16 +222,18 @@ class ScanResultPage extends StatelessWidget {
                                       '${detail.name}.',
                                       style: theme.textTheme.bodySmall
                                           ?.copyWith(
-                                            color: const Color(0xFF365342),
+                                            color: theme
+                                                .colorScheme
+                                                .onPrimaryContainer,
                                           ),
                                     ),
                                   ],
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Icon(
+                              Icon(
                                 Icons.chevron_right,
-                                color: Color(0xFF146B2E),
+                                color: theme.colorScheme.onPrimaryContainer,
                               ),
                             ],
                           ),
